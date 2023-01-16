@@ -1,0 +1,23 @@
+<h1>Markdown</h1>
+<p>A <em>file</em> with <strong>Markdown</strong> content.</p>
+<h2>With code blocks</h2>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">js</ac:parameter><ac:plain-text-body><![CDATA[let a = 'a string value';
+
+for (let char of a) {
+    console.log(char);
+}]]></ac:plain-text-body></ac:structured-macro>
+<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">sql</ac:parameter><ac:plain-text-body><![CDATA[SELECT * FROM table;]]></ac:plain-text-body></ac:structured-macro>
+<ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[No language in this block]]></ac:plain-text-body></ac:structured-macro>
+<h2>With images</h2>
+<h3>Local</h3>
+<p><ac:image ac:alt="img1"><ri:attachment ri:filename="img-1.png" /></ac:image></p>
+<h3>Remote</h3>
+<p><img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/2880px-Wikipedia-logo-v2.svg.png" alt="Wikipedia Logo" /></p>
+<h3>No content</h3>
+<p><img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/2880px-Wikipedia-logo-v2.svg.png" alt="" /></p>
+<h3>Unsafe path traversal</h3>
+<p><img src="../../../../../../../etc/passwd" alt="unsafe" /></p>
+<h2>With Mermaid graph</h2>
+<ac:image ac:alt="graph_1"><ri:attachment ri:filename="full_graph_1.png" /></ac:image><h2>With PlantUML graph</h2>
+<ac:image ac:alt="graph_2"><ri:attachment ri:filename="full_graph_2.png" /></ac:image><h2>Other content</h2>
+<p>bla bla bla</p>

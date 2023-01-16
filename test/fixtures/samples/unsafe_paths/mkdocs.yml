@@ -1,0 +1,5 @@
+site_name: Fixture Site Name
+repo_url: https://github.com/fixture-account/fixture-repo
+
+nav:
+  - Getting started: "../../../../foo"

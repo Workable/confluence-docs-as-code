@@ -1,0 +1,28 @@
+{
+    "results": [
+        {
+            "id": "1821",
+            "title": "Test",
+            "version": {
+                "number": 18
+            },
+            "metadata": {
+                "properties": {
+                    "repo": {
+                        "key": "repo",
+                        "value": "https://github.com/Org/Repo"
+                    },
+                    "path": {
+                        "key": "path",
+                        "value": "foo/bar/doc.md"
+                    },
+                    "sha": {
+                        "key": "sha",
+                        "value": "Zm9vL2Jhci9kb2MubWQ="
+                    }
+                }
+            },
+            "size": 1
+        }
+    ]
+}

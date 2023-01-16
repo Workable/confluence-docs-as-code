@@ -1,0 +1,17 @@
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "mochaExplorer.files": "test/**/*.mjs",
+    "eslint.validate": [
+        "javascript"
+    ],
+    "[javascript]": {
+        "editor.formatOnType": true,
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+    },
+    "[json]": {
+        "editor.formatOnType": true,
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+    }
+}

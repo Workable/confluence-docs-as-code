@@ -1,0 +1,36 @@
+{
+    "title": "A Page Title",
+    "type": "page",
+    "space": {
+        "key": "~SpaCek3y"
+    },
+    "ancestors": [],
+    "body": {
+        "storage": {
+            "value": "<h1>hello</h1>",
+            "representation": "storage"
+        }
+    },
+    "metadata": {
+        "properties": {}
+    },
+    "restrictions": {
+        "update": {
+            "operation": "update",
+            "restrictions": {
+                "user": {
+                    "results": [
+                        {
+                            "type": "type",
+                            "accountId": "accountId",
+                            "accountType": "accountType"
+                        }
+                    ]
+                },
+                "group": {
+                    "results": []
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,28 @@
+name: 'Docs-as-code with Confluence'
+description: 'Publishes documentation (requires an MkDocs config) to Confluence'
+branding:
+  icon: 'book-open'
+  color: 'gray-dark'
+runs:
+  using: 'node16'
+  main: 'dist/index.mjs'
+inputs:
+  confluence_tenant:
+    description: 'Your Atlassian tenant name'
+    required: true
+  confluence_space:
+    description: 'The key of the space to host your documentation'
+    required: true
+  confluence_user:
+    description: 'The username used to authenticate with Confluence REST API'
+    required: true
+  confluence_token:
+    description: 'The token used to authenticate with Confluence REST API'
+    required: true
+  confluence_parent_page:
+    description: 'The title of an existing page to use as parent'
+    required: false
+  kroki_enabled:
+    description: 'When "yes" conversion of Mermaid & PlantUML graphs into images (png) using "kroki.io"'
+    required: false
+    default: 'yes'

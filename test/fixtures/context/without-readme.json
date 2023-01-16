@@ -1,0 +1,18 @@
+{
+  "siteName": "Fixture Site Name",
+  "repo": "https://github.com/fixture-account/fixture-repo",
+  "pages": [
+    {
+      "title": "Getting started",
+      "path": "test/fixtures/samples/no_readme/docs/getting-started.md",
+      "sha": "cce0ac41675f6c5dc82b5fa18971b1f0ed3a7cbd01594de3f7882d5bf6fbabfe",
+      "exists": true
+    }
+  ],
+  "readMe": {
+    "exists": false,
+    "path": "test/fixtures/samples/no_readme/README.md",
+    "sha": null,
+    "title": "Fixture Site Name"
+  }
+}

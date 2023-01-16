@@ -1,0 +1,45 @@
+{
+    "title": "Title",
+    "type": "page",
+    "version": {
+        "number": 11
+    },
+    "ancestors": [
+        {
+            "id": 1566
+        }
+    ],
+    "body": {
+        "storage": {
+            "value": "<h1>Html</h1>",
+            "representation": "storage"
+        }
+    },
+    "metadata": {
+        "properties": {
+            "metaKey": {
+                "key": "metaKey",
+                "value": "metaValue"
+            }
+        }
+    },
+    "restrictions": {
+        "update": {
+            "operation": "update",
+            "restrictions": {
+                "user": {
+                    "results": [
+                        {
+                            "type": "type",
+                            "accountId": "accountId",
+                            "accountType": "accountType"
+                        }
+                    ]
+                },
+                "group": {
+                    "results": []
+                }
+            }
+        }
+    }
+}

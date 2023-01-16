@@ -1,0 +1,9 @@
+site_name: Fixture Site Name
+
+nav:
+  - Getting started: getting-started.md
+  - Architecture: architecture.md
+  - References:
+    - Database: references/database.md
+    - API: references/api.md
+  - How-To: how-to.md
