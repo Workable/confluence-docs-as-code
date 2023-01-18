@@ -450,7 +450,7 @@ describe('confluence-sdk', () => {
         });
     });
     describe('createAttachment', () => {
-        const file = path.resolve(process.cwd(), 'test/fixtures/images/img-1.png');
+        const file = path.resolve('test/fixtures/images/img-1.png');
         const pageId = 1;
         let requestMock;
         beforeEach(() => {
@@ -460,15 +460,46 @@ describe('confluence-sdk', () => {
         });
         describe('when file exists', () => {
             describe('when page exists', () => {
-                it('should upload the file as page attachment', () => {
-                    requestMock.reply(
-                        function () {
-                            this.req.headers['x-atlassian-token'].should.equal('nocheck');
-                            this.req.headers['content-type'].startsWith('multipart/form-data; boundary=').should.be.true;
-                            return [200];
-                        }
-                    );
-                    return sdk.createAttachment(pageId, file).should.be.fulfilled;
+                describe('when no metadata are supplied', () => {
+                    it('should upload the file as page attachment', () => {
+                        requestMock.reply(
+                            function () {
+                                this.req.headers['x-atlassian-token'].should.equal('nocheck');
+                                this.req.headers['content-type'].startsWith('multipart/form-data; boundary=').should.be.true;
+                                return [200];
+                            }
+                        );
+                        return sdk.createAttachment(pageId, file).should.be.fulfilled;
+                    });
+                });
+                describe('when metadata are also supplied', () => {
+                    it('should upload the file as page attachment and then update attachment metadata', () => {
+                        const attachmentId = 'att12345';
+                        const meta = { foo: 'bar' };
+                        const payload = {
+                            id: attachmentId,
+                            type: 'attachment',
+                            status: 'current',
+                            version: {
+                                number: 1
+                            },
+                            metadata: {
+                                properties: {
+                                    foo: { key: 'foo', value: 'bar' }
+                                }
+                            }
+                        };
+                        requestMock.reply(
+                            function () {
+                                this.req.headers['x-atlassian-token'].should.equal('nocheck');
+                                this.req.headers['content-type'].startsWith('multipart/form-data; boundary=').should.be.true;
+                                return [200, { results: [{ id: attachmentId }] }];
+                            }
+                        ).put(
+                            `${basePath}/${pageId}/child/attachment/${attachmentId}`, payload
+                        ).reply(200);
+                        return sdk.createAttachment(pageId, file, meta).should.be.fulfilled;
+                    });
                 });
             });
             describe('when page not exists', () => {

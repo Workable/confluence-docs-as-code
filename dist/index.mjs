@@ -27225,7 +27225,7 @@ class ConfluenceSdk {
         this.validateResponse(response, [204, 404]);
     }
 
-    async createAttachment(pageId, path) {
+    async createAttachment(pageId, path, meta = null) {
         util.validateType('pageId', pageId, 'number');
         util.validateType('path', path, 'string');
         const formData = new form_data();
@@ -27236,7 +27236,41 @@ class ConfluenceSdk {
             `${CONTENT_PATH}/${pageId}/child/attachment`, formData, { headers }
         );
 
+        const data = this.validateResponse(response);
+
+        if (meta) {
+            const attachmentId = data.results[0].id;
+            await this.updateAttachmentMeta(pageId, attachmentId, meta);
+        }
+    }
+
+    async updateAttachmentMeta(pageId, attachmentId, meta) {
+        util.validateType('pageId', pageId, 'number');
+        util.validateType('attachmentId', attachmentId, 'string');
+        const payload = {
+            id: attachmentId,
+            type: 'attachment',
+            status: 'current',
+            version: {
+                number: 1
+            },
+            metadata: this._metaProperties(meta)
+        };
+
+        const response = await this.api.put(
+            `${CONTENT_PATH}/${pageId}/child/attachment/${attachmentId}`, payload,
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+
         this.validateResponse(response);
+    }
+
+    _metaProperties(meta) {
+        util.validateType('meta', meta, 'object');
+        return Object.entries(meta).reduce((o, [key, value]) => {
+            o.properties[key] = { key, value };
+            return o;
+        }, { properties: {} });
     }
 
     validateResponse({ status, statusText, data }, validStatuses = [200]) {
