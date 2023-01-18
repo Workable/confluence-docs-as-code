@@ -22720,9 +22720,11 @@ const external_node_crypto_namespaceObject = __WEBPACK_EXTERNAL_createRequire(im
 
 
 
-function fileHash(path){
-    const contents = (0,external_node_fs_namespaceObject.readFileSync)(path, 'utf8');
-    return (0,external_node_crypto_namespaceObject.createHash)('sha256').update(contents).digest('hex');
+const ALG = 'sha256';
+
+function fileHash(path, encoding = 'utf8') {
+    const contents = (0,external_node_fs_namespaceObject.readFileSync)(path, encoding);
+    return (0,external_node_crypto_namespaceObject.createHash)(ALG).update(contents, encoding).digest('hex');
 }
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
