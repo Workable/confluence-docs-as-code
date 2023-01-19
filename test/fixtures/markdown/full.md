@@ -70,6 +70,10 @@ rectangle checkout {
 @enduml
 ```
 
-## Other content
+## External Link
 
-bla bla bla
+[Google](https://google.com)
+
+## Internal Link
+
+[Other Page](other-page.md)
