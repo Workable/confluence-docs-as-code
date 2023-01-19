@@ -29,6 +29,7 @@ describe('md2html', () => {
             const mmdFile = 'test/fixtures/markdown/full_graph_1.mmd';
             const pumlFile = 'test/fixtures/markdown/full_graph_2.puml';
             const expectedGraphs = [mmdFile, pumlFile];
+            const pageRefs = { pages: { 'test/fixtures/markdown/other-page.md': { title: 'Other Page', exists: true } } };
             afterEach(() => {
                 expectedGraphs.forEach((graph) => {
                     if (existsSync(graph)) {
@@ -41,7 +42,7 @@ describe('md2html', () => {
                 const htmlFile = path.resolve(fixturesPath, 'full.html');
                 it('should render the markdown, save mermaid graph to file, return image and graph references', () => {
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
-                    const { html, images, graphs } = md2html.render(mdFile);
+                    const { html, images, graphs } = md2html.render(mdFile, pageRefs);
                     html.should.equal(expectedHtml);
                     images.should.eql(expectedImages);
                     graphs.should.eql(expectedGraphs);
@@ -56,7 +57,7 @@ describe('md2html', () => {
                 it('should render the markdown to html and return only image references', () => {
                     const expectedGraphs = [];
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
-                    const { html, images, graphs } = md2html.render(mdFile);
+                    const { html, images, graphs } = md2html.render(mdFile, pageRefs);
                     html.should.equal(expectedHtml);
                     images.should.eql(expectedImages);
                     graphs.should.eql(expectedGraphs);

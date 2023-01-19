@@ -22699,7 +22699,7 @@ exports.visitAsync = visitAsync;
 
 /***/ }),
 
-/***/ 5779:
+/***/ 9328:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
 
 
@@ -27318,7 +27318,53 @@ function processGraph(ext, content, { graphs, source }) {
     return toConfluenceImage(alt, image);
 }
 
+;// CONCATENATED MODULE: ./lib/plugins/link.mjs
+
+
+function link_plugin(md) {
+    md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+        const page = localPage(tokens, idx, env, md);
+        if (page) {
+            return confluenceLinkOpen(page);
+        }
+        return self.renderToken(tokens, idx, options);
+    };
+
+    md.renderer.rules.link_close = (tokens, idx, options, env, self) => {
+        // Links are parsed as 3 tokens [link_open],[text],[link_close]
+        // With idx in this context referring to [link_close] we backtrack (-2)
+        // To pick the related [link_open]
+        if (localPage(tokens, idx - 2, env, md)) {
+            return '</ac:link-body></ac:link>';
+        }
+        return self.renderToken(tokens, idx, options);
+    };
+}
+
+
+function localPage(tokens, idx, env, md) {
+    const link = tokens[idx];
+    const attrs = Object.fromEntries(link.attrs);
+    const href = md.utils.escapeHtml(attrs.href);
+    if (link_isLocal(href)) {
+        const relPath = util.safePath(href, env.source,);
+        if (relPath && env.pages && env.pages[relPath] && env.pages[relPath].exists) {
+            return env.pages[relPath].title;
+        }
+    }
+}
+
+function link_isLocal(href) {
+    return !href.toLowerCase().startsWith('http');
+}
+
+function confluenceLinkOpen(title) {
+    return `<ac:link ac:card-appearance="inline"><ri:page ri:content-title="${title}" /><ac:link-body>`;
+}
+
+
 ;// CONCATENATED MODULE: ./lib/md2html.mjs
+
 
 
 
@@ -27329,13 +27375,15 @@ function getParser() {
     return new markdown_it({ xhtmlOut: true, html: true });
 }
 
-function render(filename) {
+function render(filename, env = {}) {
     const parser = getParser();
     const md = loadFile(filename);
     const images = [];
     const graphs = [];
     const html = parser.use(fence_plugin, { kroki: lib_config.kroki })
-        .use(image_plugin).render(md, { source: filename, images, graphs });
+        .use(image_plugin)
+        .use(link_plugin)
+        .render(md, parser.utils.assign({ source: filename, images, graphs }, env));
     return { html, images, graphs };
 }
 
@@ -27584,7 +27632,7 @@ function diff(localPages, remotePages) {
 /***/ ((__webpack_module__, __unused_webpack___webpack_exports__, __nccwpck_require__) => {
 
 __nccwpck_require__.a(__webpack_module__, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {
-/* harmony import */ var _confluence_syncer_mjs__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(5779);
+/* harmony import */ var _confluence_syncer_mjs__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(9328);
 
 
 await (0,_confluence_syncer_mjs__WEBPACK_IMPORTED_MODULE_0__/* .sync */ .Z)();
