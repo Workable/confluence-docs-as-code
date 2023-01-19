@@ -72,7 +72,7 @@ describe('confluence-sdk', () => {
                 return sdk
                     .findPage(null)
                     .should.be.rejectedWith(
-                        'title is required and should be a string'
+                        'title should be a string'
                     );
             });
         });
@@ -116,7 +116,7 @@ describe('confluence-sdk', () => {
                 return sdk
                     .createPage(null, null)
                     .should.be.rejectedWith(
-                        'title is required and should be a string'
+                        'title should be a string'
                     );
             });
         });
@@ -125,7 +125,7 @@ describe('confluence-sdk', () => {
                 return sdk
                     .createPage(title, null)
                     .should.be.rejectedWith(
-                        'html is required and should be a string'
+                        'html should be a string'
                     );
             });
         });
@@ -203,7 +203,7 @@ describe('confluence-sdk', () => {
                 return sdk
                     .updatePage(null, 11, 'Title', 'Html')
                     .should.be.rejectedWith(
-                        'id is required and should be a number'
+                        'id should be a number'
                     );
             });
         });
@@ -212,7 +212,7 @@ describe('confluence-sdk', () => {
                 return sdk
                     .updatePage(pageId, null, 'Title', 'Html')
                     .should.be.rejectedWith(
-                        'version is required and should be a number'
+                        'version should be a number'
                     );
             });
         });
@@ -221,7 +221,7 @@ describe('confluence-sdk', () => {
                 return sdk
                     .updatePage(pageId, 11, null, 'Html')
                     .should.be.rejectedWith(
-                        'title is required and should be a string'
+                        'title should be a string'
                     );
             });
         });
@@ -230,7 +230,7 @@ describe('confluence-sdk', () => {
                 return sdk
                     .updatePage(pageId, 11, 'Title', null)
                     .should.be.rejectedWith(
-                        'html is required and should be a string'
+                        'html should be a string'
                     );
             });
         });
@@ -239,7 +239,7 @@ describe('confluence-sdk', () => {
             it('should throw Error', () => {
                 return sdk
                     .updatePage(pageId, 11, 'Title', 'Html', 'Parent')
-                    .should.be.rejectedWith('parentPage should be an number');
+                    .should.be.rejectedWith('parentPage should be a number');
             });
         });
 

@@ -22699,7 +22699,7 @@ exports.visitAsync = visitAsync;
 
 /***/ }),
 
-/***/ 6425:
+/***/ 5779:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
 
 
@@ -22716,7 +22716,7 @@ const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import
 var dist = __nccwpck_require__(4083);
 ;// CONCATENATED MODULE: external "node:crypto"
 const external_node_crypto_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:crypto");
-;// CONCATENATED MODULE: ./lib/file-hash.mjs
+;// CONCATENATED MODULE: ./lib/util.mjs
 
 
 
@@ -22726,6 +22726,34 @@ function fileHash(path, encoding = 'utf8') {
     const contents = (0,external_node_fs_namespaceObject.readFileSync)(path, encoding);
     return (0,external_node_crypto_namespaceObject.createHash)(ALG).update(contents, encoding).digest('hex');
 }
+
+function validateType(name, value, type) {
+    const article = 'aeiou'.includes(type[0]) ? 'an' : 'a';
+    const error = new Error(`${name} should be ${article} ${type}`);
+    if (type === 'array' && Array.isArray(value)) {
+        return;
+    } else if (type === 'object') {
+        if (
+            typeof value !== 'object' ||
+            value === null ||
+            Array.isArray(value)
+        ) {
+            throw error;
+        }
+    } else if (typeof value !== type) {
+        throw error;
+    }
+}
+
+function keyBy(array, attribute) {
+    const index = {};
+    if (Array.isArray(array)) {
+        array.forEach((object) => (index[object[attribute]] = object));
+    }
+    return index;
+}
+
+/* harmony default export */ const util = ({ validateType, fileHash, keyBy });
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
@@ -22813,7 +22841,7 @@ function getPage(title, pagePath) {
     let sha = null;
     let relPath = external_node_path_namespaceObject.relative(process.cwd(), pagePath);
     if (exists) {
-        sha = fileHash(pagePath);
+        sha = util.fileHash(pagePath);
         relPath = external_node_path_namespaceObject.relative(process.cwd(), pagePath);
     }
     return { title, path: relPath, sha, exists };
@@ -26949,21 +26977,6 @@ class RequestError extends Error {
 }
 
 
-;// CONCATENATED MODULE: ./lib/validator.mjs
-function validateType(value, type, message) {
-    if (type === 'object') {
-        if (
-            typeof value !== 'object' ||
-            value === null ||
-            Array.isArray(value)
-        ) {
-            throw new Error(message);
-        }
-    } else if (typeof value !== type) {
-        throw new Error(message);
-    }
-}
-
 ;// CONCATENATED MODULE: ./lib/confluence-sdk.mjs
 
 
@@ -26983,14 +26996,14 @@ const EXPAND_PROPERTIES = [
 
 class ConfluenceSdk {
     constructor({ host, user, token, spaceKey }) {
-        validateType(host, 'string', 'host is required');
+        util.validateType('host', host, 'string');
         this.host = host;
 
-        validateType(spaceKey, 'string', 'spaceKey is required');
+        util.validateType('spaceKey', spaceKey, 'string');
         this.spaceKey = spaceKey;
 
-        validateType(user, 'string', 'user is required');
-        validateType(token, 'string', 'token is required');
+        util.validateType('user', user, 'string');
+        util.validateType('token', token, 'string');
         this.authHeader =
             'Basic ' + Buffer.from(`${user}:${token}`).toString('base64');
 
@@ -27005,7 +27018,7 @@ class ConfluenceSdk {
     }
 
     async getChildPages(parentPage) {
-        validateType(parentPage, 'number', 'parentPage should be a number');
+        util.validateType('parentPage', parentPage, 'number');
         const query = external_node_querystring_namespaceObject.stringify({
             expand: EXPAND_PROPERTIES
         });
@@ -27043,11 +27056,7 @@ class ConfluenceSdk {
     }
 
     async findPage(title) {
-        validateType(
-            title,
-            'string',
-            'title is required and should be a string'
-        );
+        util.validateType('title', title, 'string');
         const query = external_node_querystring_namespaceObject.stringify({
             title,
             type: 'page',
@@ -27079,12 +27088,8 @@ class ConfluenceSdk {
     }
 
     async createPage(title, html, parentPage = null, meta = null) {
-        validateType(
-            title,
-            'string',
-            'title is required and should be a string'
-        );
-        validateType(html, 'string', 'html is required and should be a string');
+        util.validateType('title', title, 'string');
+        util.validateType('html', html, 'string');
 
         const payload = {
             title,
@@ -27113,14 +27118,14 @@ class ConfluenceSdk {
         });
 
         if (meta) {
-            validateType(meta, 'object', 'meta should be an object');
+            util.validateType('meta', meta, 'object');
             Object.entries(meta).forEach(([key, value]) => {
                 payload.metadata.properties[key] = { key, value };
             });
         }
 
         if (parentPage) {
-            validateType(parentPage, 'number', 'parentPage should be a number');
+            util.validateType('parentPage', parentPage, 'number');
             payload.ancestors.push({ id: parentPage });
         }
 
@@ -27137,18 +27142,10 @@ class ConfluenceSdk {
     }
 
     async updatePage(id, version, title, html, parentPage = null, meta = null) {
-        validateType(id, 'number', 'id is required and should be a number');
-        validateType(
-            version,
-            'number',
-            'version is required and should be a number'
-        );
-        validateType(
-            title,
-            'string',
-            'title is required and should be a string'
-        );
-        validateType(html, 'string', 'html is required and should be a string');
+        util.validateType('id', id, 'number');
+        util.validateType('version', version, 'number');
+        util.validateType('title', title, 'string');
+        util.validateType('html', html, 'string');
 
         const payload = {
             title,
@@ -27177,18 +27174,14 @@ class ConfluenceSdk {
         });
 
         if (meta) {
-            validateType(meta, 'object', 'meta should be an object');
+            util.validateType('meta', meta, 'object');
             Object.entries(meta).forEach(([key, value]) => {
                 payload.metadata.properties[key] = { key, value };
             });
         }
 
         if (parentPage) {
-            validateType(
-                parentPage,
-                'number',
-                'parentPage should be an number'
-            );
+            util.validateType('parentPage', parentPage, 'number');
             payload.ancestors.push({ id: parentPage });
         }
 
@@ -27210,6 +27203,8 @@ class ConfluenceSdk {
     }
 
     async createAttachment(pageId, path) {
+        util.validateType('pageId', pageId, 'number');
+        util.validateType('path', path, 'string');
         const formData = new form_data();
         formData.append('minorEdit', 'true');
         formData.append('file', external_node_fs_namespaceObject.createReadStream(path));
@@ -27410,6 +27405,7 @@ class KrokiSdk {
 
 
 
+
 const confluence = new ConfluenceSdk(lib_config.confluence);
 const kroki = new KrokiSdk(lib_config.kroki);
 
@@ -27547,14 +27543,6 @@ async function createGraphs(pageId, graphs) {
     }
 }
 
-function indexByPath(pages) {
-    const index = {};
-    if (Array.isArray(pages)) {
-        pages.forEach((page) => (index[page.path] = page));
-    }
-    return index;
-}
-
 function diff(localPages, remotePages) {
     const results = {
         create: [],
@@ -27562,7 +27550,7 @@ function diff(localPages, remotePages) {
         delete: []
     };
 
-    const remoteIndex = indexByPath(remotePages);
+    const remoteIndex = util.keyBy(remotePages, 'path');
     for (let localPage of localPages) {
         const remotePage = remoteIndex[localPage.path];
         if (!remotePage) {
@@ -27576,7 +27564,7 @@ function diff(localPages, remotePages) {
         }
     }
 
-    const localIndex = indexByPath(localPages);
+    const localIndex = util.keyBy(localPages, 'path');
     for (let remotePage of remotePages) {
         if (!localIndex[remotePage.path]) {
             // exist on remote not on local -> delete
@@ -27594,7 +27582,7 @@ function diff(localPages, remotePages) {
 /***/ ((__webpack_module__, __unused_webpack___webpack_exports__, __nccwpck_require__) => {
 
 __nccwpck_require__.a(__webpack_module__, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {
-/* harmony import */ var _confluence_syncer_mjs__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(6425);
+/* harmony import */ var _confluence_syncer_mjs__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(5779);
 
 
 await (0,_confluence_syncer_mjs__WEBPACK_IMPORTED_MODULE_0__/* .sync */ .Z)();
