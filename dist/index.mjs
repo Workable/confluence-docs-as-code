@@ -22720,6 +22720,7 @@ const external_node_crypto_namespaceObject = __WEBPACK_EXTERNAL_createRequire(im
 
 
 
+
 const ALG = 'sha256';
 
 function fileHash(path, encoding = 'utf8') {
@@ -22753,7 +22754,15 @@ function keyBy(array, attribute) {
     return index;
 }
 
-/* harmony default export */ const util = ({ validateType, fileHash, keyBy });
+
+function safePath(file, base = process.cwd()) {
+    const resolvedPath = external_node_path_namespaceObject.resolve(external_node_path_namespaceObject.dirname(base), file);
+    if (resolvedPath.startsWith(process.cwd()) && (0,external_node_fs_namespaceObject.existsSync)(resolvedPath)) {
+        return external_node_path_namespaceObject.relative(process.cwd(), resolvedPath);
+    }
+}
+
+/* harmony default export */ const util = ({ validateType, fileHash, keyBy, safePath });
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
@@ -27239,7 +27248,7 @@ function image_plugin(md) {
 
         if (isLocal(src)) {
             const file = external_node_path_namespaceObject.basename(src);
-            const relPath = safePath(env.source, src);
+            const relPath = util.safePath(src, env.source);
             if (relPath) {
                 env.images.push(relPath);
                 return toConfluenceImage(image.content, file);
@@ -27252,13 +27261,6 @@ function image_plugin(md) {
 
 function isLocal(src) {
     return !src.startsWith('http');
-}
-
-function safePath(source, src) {
-    const resolvedPath = external_node_path_namespaceObject.resolve(external_node_path_namespaceObject.dirname(source), src);
-    if (resolvedPath.startsWith(process.cwd()) && (0,external_node_fs_namespaceObject.existsSync)(resolvedPath)) {
-        return external_node_path_namespaceObject.relative(process.cwd(), resolvedPath);
-    }
 }
 
 function toConfluenceImage(alt, filename) {
