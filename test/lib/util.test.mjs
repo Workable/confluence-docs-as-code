@@ -6,8 +6,8 @@ describe('util', () => {
     describe('fileHash', () => {
         describe('for text files', () => {
             it('should compute the sha256 of the given file', () => {
-                const file = path.resolve('test/fixtures/markdown/full.md');
-                const expected = 'c1bfc2f894d8e906e8bbf26725f1c305734f3f58275393baab0b1dd9b8301001';
+                const file = path.resolve('test/fixtures/samples/simple/docs/getting-started.md');
+                const expected = 'cce0ac41675f6c5dc82b5fa18971b1f0ed3a7cbd01594de3f7882d5bf6fbabfe';
                 util.fileHash(file).should.equal(expected);
                 util.fileHash(file, 'utf8').should.equal(expected);
             });
