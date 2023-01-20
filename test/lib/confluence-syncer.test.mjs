@@ -7,6 +7,7 @@ import logger from '../../lib/logger.mjs';
 import context from '../../lib/context.mjs';
 import config from '../../lib/config.mjs';
 import md2html from '../../lib/md2html.mjs';
+import util from '../../lib/util.mjs';
 
 const sandbox = sinon.createSandbox();
 
@@ -49,7 +50,7 @@ describe('confluence-syncer', () => {
             it('should catch error and set action as failed', () => {
                 const error = new Error('Something went wrong');
                 sdkMock.findPage.rejects(error);
-                getContextMock.returns({});
+                getContextMock.returns({ pages: [] });
                 return sync().then(() => {
                     sandbox.assert.calledWith(loggerMock.fail, error);
                 });
@@ -63,7 +64,7 @@ describe('confluence-syncer', () => {
             it('should set action as failed and debug log the config', () => {
                 const error = 'Something went wrong';
                 sdkMock.findPage.rejects(new Error(error));
-                getContextMock.returns({});
+                getContextMock.returns({ pages: [] });
                 return sync().then(() => {
                     const expected = `Config:\n${JSON.stringify(config, null, 2)}`;
                     sandbox.assert.calledWith(loggerMock.fail, sinon.match.has('message', error));
@@ -77,7 +78,7 @@ describe('confluence-syncer', () => {
             describe('when parent page not found', () => {
                 it('should fail with error', () => {
                     const error = `The page configured as parent (${config.confluence.parentPage}) does not exist in confluence`;
-                    getContextMock.returns({});
+                    getContextMock.returns({ pages: [] });
                     sdkMock.findPage.resolves(undefined);
                     return sync().then(() => {
                         sandbox.assert.calledWith(loggerMock.fail, sinon.match.has('message', error));
@@ -238,6 +239,7 @@ describe('confluence-syncer', () => {
             };
             const remotePages = [deletedPage, updatePage].map(({ path, sha, version, id }) => ({ id, path, sha, version }));
             const localPages = [createPage, updatePage].map(({ path, title }) => ({ title, path, sha: 'abc456', exists: true }));
+            const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
             beforeEach(() => {
                 sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
                 sdkMock.findPage.withArgs(siteName).resolves(existingPage);
@@ -246,9 +248,9 @@ describe('confluence-syncer', () => {
                 sdkMock.deletePage.resolves();
                 sdkMock.getChildPages.withArgs(root).resolves(remotePages);
                 getContextMock.returns({ siteName, repo, readMe, pages: localPages });
-                md2htmlMock.withArgs(resolve(createPage.path))
+                md2htmlMock.withArgs(resolve(createPage.path), pageRefs)
                     .returns({ html: createPage.html, images: createPage.images, graphs: createPage.graphs });
-                md2htmlMock.withArgs(resolve(updatePage.path))
+                md2htmlMock.withArgs(resolve(updatePage.path), pageRefs)
                     .returns({ html: updatePage.html, images: updatePage.images, graphs: updatePage.graphs });
                 toPngMock.withArgs(updatePage.graphs[0]).resolves(updatePage.graphs[0].slice(0, -4) + '.png');
                 toPngMock.withArgs(createPage.graphs[0]).resolves(createPage.graphs[0].slice(0, -4) + '.png');

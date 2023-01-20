@@ -6,6 +6,7 @@ Atlassian Confluence Cloud wiki.
 ## Features
 
 * Publishes only new or changed pages
+* Converts internal links to Confluence links
 * Uploads images as Confluence page attachments
 * Converts fenced code blocks to Confluence code macros
 * Renders *Mermaid* & *PlantUML* graphs to images (via [Kroki.io](https://kroki.io))
