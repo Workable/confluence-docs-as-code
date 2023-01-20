@@ -34,6 +34,17 @@ describe('util', () => {
         });
     });
     describe('keyBy', () => {
+        describe('when array is empty', () => {
+            it('should return empty object', () => {
+                util.keyBy([], 'key').should.eql({});
+            });
+        });
+        describe('when some array elements have the desired key', () => {
+            it('should return only conforming elements', () => {
+                util.keyBy([{ key: 'k1', value: 'v1' }, { index: 1, value: 'v2' }], 'key')
+                    .should.eql({ 'k1': { key: 'k1', value: 'v1' } });
+            });
+        });
         it('should transform an array of objects to an object keyed by an attribute', () => {
             const input = [
                 { key: 'k1', value: 'v1' },
