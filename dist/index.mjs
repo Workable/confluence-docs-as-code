@@ -22748,8 +22748,12 @@ function validateType(name, value, type) {
 
 function keyBy(array, attribute) {
     const index = {};
-    if (Array.isArray(array)) {
-        array.forEach((object) => (index[object[attribute]] = object));
+    if (Array.isArray(array) && array.length > 0) {
+        array.forEach((object) => {
+            if (object && object[attribute]) {
+                index[object[attribute]] = object;
+            }
+        });
     }
     return index;
 }
@@ -27462,8 +27466,9 @@ const kroki = new KrokiSdk(lib_config.kroki);
 async function sync() {
     try {
         const { siteName, repo, pages: localPages, readMe } = context.getContext();
-        const home = await syncHome(repo, siteName, readMe);
-        await syncPages(repo, home, localPages);
+        const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
+        const home = await syncHome(repo, siteName, readMe, pageRefs);
+        await syncPages(repo, home, localPages, pageRefs);
         const rootUrl = `${lib_config.confluence.host}/wiki/spaces/${lib_config.confluence.spaceKey}/pages/${home}`;
         logger.info(`"${siteName}" Documentation published at ${rootUrl}`);
     } catch (error) {
@@ -27481,12 +27486,12 @@ function errorHandler(error) {
     logger.fail(error);
 }
 
-async function syncHome(repo, siteName, readMe) {
+async function syncHome(repo, siteName, readMe, pageRefs) {
     const parentPage = await findParentPage();
     let homeHtml = `<h1>${siteName}</h1>`;
     let attachments = { images: [], graphs: [] };
     if (readMe?.exists) {
-        const { html, images, graphs } = md2html.render(external_node_path_namespaceObject.resolve(readMe.path));
+        const { html, images, graphs } = md2html.render(external_node_path_namespaceObject.resolve(readMe.path), pageRefs);
         homeHtml = html;
         attachments = { images, graphs };
     }
@@ -27521,8 +27526,8 @@ async function findParentPage() {
     return parentPage?.id;
 }
 
-async function syncPages(repo, home, localPages) {
-    const filteredLocalPages = localPages.filter(page => page.exists);
+async function syncPages(repo, home, localPages, pageRefs) {
+    const filteredLocalPages = localPages.filter(page => page?.exists);
     // get children of home
     const remotePages = await confluence.getChildPages(home);
     // compute diff between remote and local pages
@@ -27530,14 +27535,14 @@ async function syncPages(repo, home, localPages) {
     // delete removed pages
     await unpublish(differences.delete);
     // update changed pages
-    await update(differences.update, repo, home);
+    await update(differences.update, repo, home, pageRefs);
     // create added pages
-    await create(differences.create, repo, home);
+    await create(differences.create, repo, home, pageRefs);
 }
 
-async function create(localPages, repo, root) {
+async function create(localPages, repo, root, pageRefs) {
     for (let page of localPages) {
-        const { html, images, graphs } = md2html.render(external_node_path_namespaceObject.resolve(page.path));
+        const { html, images, graphs } = md2html.render(external_node_path_namespaceObject.resolve(page.path), pageRefs);
         const meta = { repo, path: page.path, sha: page.sha };
         const pageId = await confluence.createPage(page.title, html, root, meta);
         await createAttachments(pageId, { images, graphs });
@@ -27545,9 +27550,9 @@ async function create(localPages, repo, root) {
     }
 }
 
-async function update(localPages, repo, root) {
+async function update(localPages, repo, root, pageRefs) {
     for (let page of localPages) {
-        const { html, images, graphs } = md2html.render(external_node_path_namespaceObject.resolve(page.path));
+        const { html, images, graphs } = md2html.render(external_node_path_namespaceObject.resolve(page.path), pageRefs);
         const meta = { repo, path: page.path, sha: page.sha };
         await createAttachments(page.id, { images, graphs });
         await confluence
