@@ -1,40 +1,45 @@
 {
-    "title": "Title",
-    "type": "page",
-    "version": {
-        "number": 11
-    },
-    "ancestors": [
-        {
-            "id": 1566
-        }
-    ],
-    "body": {
-        "storage": {
-            "value": "<h1>Html</h1>",
-            "representation": "storage"
-        }
-    },
-    "metadata": {
-        "properties": {}
-    },
-    "restrictions": {
-        "update": {
-            "operation": "update",
-            "restrictions": {
-                "user": {
-                    "results": [
-                        {
-                            "type": "type",
-                            "accountId": "accountId",
-                            "accountType": "accountType"
-                        }
-                    ]
-                },
-                "group": {
-                    "results": []
-                }
-            }
-        }
+  "title": "Title",
+  "type": "page",
+  "version": {
+    "number": 11
+  },
+  "ancestors": [
+    {
+      "id": 1566
     }
+  ],
+  "body": {
+    "storage": {
+      "value": "<h1>Html</h1>",
+      "representation": "storage"
+    }
+  },
+  "metadata": {
+    "properties": {
+      "editor": {
+        "key": "editor",
+        "value": "v2"
+      }
+    }
+  },
+  "restrictions": {
+    "update": {
+      "operation": "update",
+      "restrictions": {
+        "user": {
+          "results": [
+            {
+              "type": "type",
+              "accountId": "accountId",
+              "accountType": "accountType"
+            }
+          ]
+        },
+        "group": {
+          "results": []
+        }
+      }
+    }
+  }
 }
