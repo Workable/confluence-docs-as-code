@@ -13,6 +13,10 @@
   },
   "metadata": {
     "properties": {
+      "editor": {
+        "key": "editor",
+        "value": "v2"
+      },
       "repo": {
         "key": "repo",
         "value": "a github repo"

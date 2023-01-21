@@ -27113,7 +27113,12 @@ class ConfluenceSdk {
                 storage: { value: html, representation: 'storage' }
             },
             metadata: {
-                properties: {}
+                properties: {
+                    editor: {
+                        key: 'editor',
+                        value: 'v2'
+                    }
+                }
             },
             restrictions: {
                 update: {
@@ -27169,7 +27174,12 @@ class ConfluenceSdk {
                 storage: { value: html, representation: 'storage' }
             },
             metadata: {
-                properties: {}
+                properties: {
+                    editor: {
+                        key: 'editor',
+                        value: 'v2'
+                    }
+                }
             },
             restrictions: {
                 update: {
