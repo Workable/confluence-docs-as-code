@@ -27258,14 +27258,16 @@ function image_plugin(md) {
     const _default = md.renderer.rules.image;
     md.renderer.rules.image = (tokens, idx, options, env, self) => {
         const image = tokens[idx];
-        const { src } = Object.fromEntries(image.attrs);
+        const attrs = Object.fromEntries(image.attrs);
+        const src = md.utils.escapeHtml(attrs.src);
 
         if (isLocal(src)) {
             const file = external_node_path_namespaceObject.basename(src);
             const relPath = util.safePath(src, env.source);
             if (relPath) {
                 env.images.push(relPath);
-                return toConfluenceImage(image.content, file);
+                const alt = md.utils.escapeHtml(image.content);
+                return toConfluenceImage(alt, file);
             }
         }
 
