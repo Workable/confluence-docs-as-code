@@ -27626,7 +27626,9 @@ async function createAttachments(pageId, { images, graphs }) {
 
 async function createImages(pageId, images) {
     for (const image of images) {
-        await confluence.createAttachment(pageId, external_node_path_namespaceObject.resolve(image));
+        const imagePath = external_node_path_namespaceObject.resolve(image);
+        const sha = util.fileHash(imagePath, 'binary');
+        await confluence.createAttachment(pageId, imagePath, { sha });
         logger.debug(`Attached image "${image}" to page #${pageId}`);
     }
 }

@@ -126,16 +126,18 @@ describe('confluence-syncer', () => {
                         });
                         describe('when README.md contains images', () => {
                             const id = 1;
+                            const imagePath = 'test/fixtures/images/img-1.png';
+                            const sha = '14505743f8bcd27ceb3a3d0fb8260ea2de3c6b3bb48c029c0061bb05baa70332';
                             beforeEach(() => {
-                                md2htmlMock.withArgs(readMe.path).returns({ html, images: ['image/path/image-file.png'], graphs: [] });
+                                md2htmlMock.withArgs(readMe.path).returns({ html, images: [imagePath], graphs: [] });
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
                                 sdkMock.createPage.returns(id);
                             });
                             it('should create the page using the content and images from README.md', () => {
                                 return sync().then(() => {
-                                    sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, { repo, ...readMe });
-                                    sandbox.assert.calledWith(sdkMock.createAttachment, id, resolve('image/path/image-file.png'));
                                     sandbox.assert.notCalled(loggerMock.fail);
+                                    sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, { repo, ...readMe });
+                                    sandbox.assert.calledWith(sdkMock.createAttachment, id, resolve(imagePath), { sha });
                                 });
                             });
                         });
@@ -225,17 +227,25 @@ describe('confluence-syncer', () => {
             const repo = 'git-repo';
             const siteName = 'Site Name';
             const readMe = { path: '/path/to/README.md', sha: 'abc123' };
+            const image1 = {
+                path: 'test/fixtures/images/img-1.png',
+                sha: '14505743f8bcd27ceb3a3d0fb8260ea2de3c6b3bb48c029c0061bb05baa70332'
+            };
+            const image2 = {
+                path: 'test/fixtures/images/img-2.png',
+                sha: '8124a1c6d4fd2895b9e1e4e4f7413342413733fb1094aa3b6840933072936655'
+            };
             const existingPage = { id: 1, repo, sha: 'abc123', version: 1 };
             const deletedPage = {
                 path: 'docs/deleted.md', sha: 'abc123', id: 100
             };
             const updatePage = {
                 title: 'Updated Page', path: 'docs/updated.md', sha: 'abc123', html: '<h1>Updated Page</h1>',
-                images: ['update-page-image.png'], graphs: ['update-page-graph.mmd'], repo, version: 1, id: 200
+                images: [image1.path], graphs: ['update-page-graph.mmd'], repo, version: 1, id: 200
             };
             const createPage = {
                 title: 'Created Page', path: 'docs/created.md', sha: 'abc456', html: '<h1>Created Page</h1>',
-                images: ['create-page-image.png'], graphs: ['create-page-graph.mmd', 'unprocessable-graph.mmd'], repo, id: 300
+                images: [image2.path], graphs: ['create-page-graph.mmd', 'unprocessable-graph.mmd'], repo, id: 300
             };
             const remotePages = [deletedPage, updatePage].map(({ path, sha, version, id }) => ({ id, path, sha, version }));
             const localPages = [createPage, updatePage].map(({ path, title }) => ({ title, path, sha: 'abc456', exists: true }));
@@ -279,8 +289,8 @@ describe('confluence-syncer', () => {
                     sandbox.assert.calledWith(sdkMock.deletePage, deletedPage.id);
                     // Attachments
                     sandbox.assert.callCount(sdkMock.createAttachment, 4);
-                    sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.images[0]));
-                    sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.images[0]));
+                    sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.images[0]), { sha: image2.sha });
+                    sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.images[0]), { sha: image1.sha });
                     sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.graphs[0].slice(0, -4) + '.png'));
                     sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.graphs[0].slice(0, -4) + '.png'));
                     loggerMock.warn.calledWith(`Graph "${createPage.graphs[1]}" for page #${createPage.id} could not be processed`);
