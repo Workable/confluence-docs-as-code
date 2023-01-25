@@ -1,6 +1,6 @@
 {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "mochaExplorer.files": "test/**/*.mjs",
+    "mochaExplorer.files": "test/**/*.js",
     "eslint.validate": [
         "javascript"
     ],

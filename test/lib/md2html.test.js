@@ -2,8 +2,8 @@ import path from 'node:path';
 import { readFileSync, unlinkSync, existsSync } from 'node:fs';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import md2html from '../../lib/md2html.mjs';
-import config from '../../lib/config.mjs';
+import md2html from '../../lib/md2html.js';
+import config from '../../lib/config.js';
 
 const sandbox = sinon.createSandbox();
 
