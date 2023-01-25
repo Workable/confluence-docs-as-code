@@ -22699,7 +22699,7 @@ exports.visitAsync = visitAsync;
 
 /***/ }),
 
-/***/ 9328:
+/***/ 1758:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __nccwpck_require__) => {
 
 
@@ -22716,7 +22716,7 @@ const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import
 var dist = __nccwpck_require__(4083);
 ;// CONCATENATED MODULE: external "node:crypto"
 const external_node_crypto_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:crypto");
-;// CONCATENATED MODULE: ./lib/util.mjs
+;// CONCATENATED MODULE: ./lib/util.js
 
 
 
@@ -22770,7 +22770,7 @@ function safePath(file, base = process.cwd()) {
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
-;// CONCATENATED MODULE: ./lib/logger.mjs
+;// CONCATENATED MODULE: ./lib/logger.js
 
 
 function debug(message) {
@@ -22805,7 +22805,7 @@ function fail(message) {
     debug, warn, info, notice, error, isDebug, fail
 });
 
-;// CONCATENATED MODULE: ./lib/context.mjs
+;// CONCATENATED MODULE: ./lib/context.js
 
 
 
@@ -22872,7 +22872,7 @@ function getContext(basePath = '.') {
 
 /* harmony default export */ const context = ({ getContext });
 
-;// CONCATENATED MODULE: ./lib/config.mjs
+;// CONCATENATED MODULE: ./lib/config.js
 
 
 const requiredInputOptions = { required: true, trimWhitespace: true };
@@ -26982,7 +26982,7 @@ const {
 /* harmony default export */ const node_modules_axios = (lib_axios);
 
 
-;// CONCATENATED MODULE: ./lib/confluence-sdk-errors.mjs
+;// CONCATENATED MODULE: ./lib/confluence-sdk-errors.js
 class RequestError extends Error {
     constructor(status, statusText, message = null) {
         super(`Request failed with: ${status} - ${message || statusText}`);
@@ -26990,7 +26990,7 @@ class RequestError extends Error {
 }
 
 
-;// CONCATENATED MODULE: ./lib/confluence-sdk.mjs
+;// CONCATENATED MODULE: ./lib/confluence-sdk.js
 
 
 
@@ -27250,7 +27250,7 @@ class ConfluenceSdk {
 
 // EXTERNAL MODULE: ./node_modules/markdown-it/index.js
 var markdown_it = __nccwpck_require__(8561);
-;// CONCATENATED MODULE: ./lib/plugins/image.mjs
+;// CONCATENATED MODULE: ./lib/plugins/image.js
 
 
 
@@ -27283,7 +27283,7 @@ function toConfluenceImage(alt, filename) {
     return `<ac:image ac:alt="${alt}"><ri:attachment ri:filename="${filename}" /></ac:image>`;
 }
 
-;// CONCATENATED MODULE: ./lib/plugins/fence.mjs
+;// CONCATENATED MODULE: ./lib/plugins/fence.js
 
 
 
@@ -27334,7 +27334,7 @@ function processGraph(ext, content, { graphs, source }) {
     return toConfluenceImage(alt, image);
 }
 
-;// CONCATENATED MODULE: ./lib/plugins/link.mjs
+;// CONCATENATED MODULE: ./lib/plugins/link.js
 
 
 function link_plugin(md) {
@@ -27379,7 +27379,7 @@ function confluenceLinkOpen(title) {
 }
 
 
-;// CONCATENATED MODULE: ./lib/md2html.mjs
+;// CONCATENATED MODULE: ./lib/md2html.js
 
 
 
@@ -27415,7 +27415,7 @@ function loadFile(filename) {
 
 /* harmony default export */ const md2html = ({ render });
 
-;// CONCATENATED MODULE: ./lib/kroki-sdk.mjs
+;// CONCATENATED MODULE: ./lib/kroki-sdk.js
 
 
 
@@ -27462,7 +27462,7 @@ class KrokiSdk {
     }
 }
 
-;// CONCATENATED MODULE: ./lib/confluence-syncer.mjs
+;// CONCATENATED MODULE: ./lib/confluence-syncer.js
 
 
 
@@ -27645,14 +27645,14 @@ function diff(localPages, remotePages) {
 
 /***/ }),
 
-/***/ 5009:
+/***/ 4554:
 /***/ ((__webpack_module__, __unused_webpack___webpack_exports__, __nccwpck_require__) => {
 
 __nccwpck_require__.a(__webpack_module__, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {
-/* harmony import */ var _confluence_syncer_mjs__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(9328);
+/* harmony import */ var _confluence_syncer_js__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(1758);
 
 
-await (0,_confluence_syncer_mjs__WEBPACK_IMPORTED_MODULE_0__/* .sync */ .Z)();
+await (0,_confluence_syncer_js__WEBPACK_IMPORTED_MODULE_0__/* .sync */ .Z)();
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } }, 1);
@@ -27801,6 +27801,6 @@ module.exports = JSON.parse('{"application/1d-interleaved-parityfec":{"source":"
 /******/ // startup
 /******/ // Load entry module and return exports
 /******/ // This entry module used 'module' so it can't be inlined
-/******/ var __webpack_exports__ = __nccwpck_require__(5009);
+/******/ var __webpack_exports__ = __nccwpck_require__(4554);
 /******/ __webpack_exports__ = await __webpack_exports__;
 /******/ 

@@ -1,4 +1,4 @@
-import config from '../../lib/config.mjs';
+import config from '../../lib/config.js';
 
 describe('config', () => {
     it('should retrieve configuration values from github action inputs', () => {

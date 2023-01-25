@@ -1,13 +1,13 @@
 import { resolve } from 'node:path';
 import sinon from 'sinon';
-import { sync } from '../../lib/confluence-syncer.mjs';
-import ConfluenceSDK from '../../lib/confluence-sdk.mjs';
-import KrokiSDK from '../../lib/kroki-sdk.mjs';
-import logger from '../../lib/logger.mjs';
-import context from '../../lib/context.mjs';
-import config from '../../lib/config.mjs';
-import md2html from '../../lib/md2html.mjs';
-import util from '../../lib/util.mjs';
+import { sync } from '../../lib/confluence-syncer.js';
+import ConfluenceSDK from '../../lib/confluence-sdk.js';
+import KrokiSDK from '../../lib/kroki-sdk.js';
+import logger from '../../lib/logger.js';
+import context from '../../lib/context.js';
+import config from '../../lib/config.js';
+import md2html from '../../lib/md2html.js';
+import util from '../../lib/util.js';
 
 const sandbox = sinon.createSandbox();
 

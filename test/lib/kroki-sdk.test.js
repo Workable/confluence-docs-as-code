@@ -1,6 +1,6 @@
 import { unlinkSync, existsSync, createReadStream } from 'node:fs';
 import nock from 'nock';
-import KrokiSdk from '../../lib/kroki-sdk.mjs';
+import KrokiSdk from '../../lib/kroki-sdk.js';
 
 describe('kroki-sdk', () => {
     let sdk;

@@ -1,8 +1,8 @@
 import sinon from 'sinon';
-import context from '../../lib/context.mjs';
-import logger from '../../lib/logger.mjs';
+import context from '../../lib/context.js';
+import logger from '../../lib/logger.js';
 import { expect } from 'chai';
-import { simple, noReadme, withUnsafeFiles } from '../fixtures/context/index.mjs';
+import { simple, noReadme, withUnsafeFiles } from '../fixtures/context/index.js';
 
 const sandbox = sinon.createSandbox();
 describe('context', () => {

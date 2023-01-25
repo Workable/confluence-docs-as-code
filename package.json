@@ -2,15 +2,19 @@
   "name": "md-to-confluence-action",
   "version": "1.1.0",
   "description": "Github Action to publish your markdown documentation to Confluence",
-  "main": "dist/index.mjs",
+  "main": "dist/index.js",
   "scripts": {
-    "posttest": "eslint ./lib/**/*.mjs",
+    "posttest": "eslint ./lib/**/*.js",
     "test": "c8 mocha",
-    "build": "ncc build lib/index.mjs --license licenses.txt",
+    "build": "ncc build lib/index.js --license licenses.txt",
     "prepare": "husky install"
   },
   "author": "Eleftherios Chetzakis <eleftherios@workable.com>",
   "license": "ISC",
+  "engines": {
+    "node": ">=16"
+  },
+  "type": "module",
   "volta": {
     "node": "16.18.0"
   },
@@ -35,7 +39,7 @@
     "sinon": "^14.0.1"
   },
   "lint-staged": {
-    "lib/**/*.mjs": [
+    "lib/**/*.js": [
       "eslint --fix"
     ]
   }

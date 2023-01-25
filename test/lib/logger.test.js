@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import core from '@actions/core';
-import logger from '../../lib/logger.mjs';
+import logger from '../../lib/logger.js';
 
 const sandbox = sinon.createSandbox();
 

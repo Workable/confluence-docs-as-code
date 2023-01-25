@@ -1,5 +1,5 @@
 import path from 'node:path';
-import util from '../../lib/util.mjs';
+import util from '../../lib/util.js';
 import { expect } from 'chai';
 
 describe('util', () => {

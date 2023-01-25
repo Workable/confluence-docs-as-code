@@ -2,12 +2,12 @@ import qs from 'node:querystring';
 import path from 'node:path';
 import nock from 'nock';
 import sinon from 'sinon';
-import ConfluenceSdk from '../../lib/confluence-sdk.mjs';
-import logger from '../../lib/logger.mjs';
-import { RequestError } from '../../lib/confluence-sdk-errors.mjs';
-import * as createPageFixtures from '../fixtures/sdk_request/create_page/index.mjs';
-import * as updatePageFixtures from '../fixtures/sdk_request/update_page/index.mjs';
-import * as responseFixtures from '../fixtures/confluence_response/index.mjs';
+import ConfluenceSdk from '../../lib/confluence-sdk.js';
+import logger from '../../lib/logger.js';
+import { RequestError } from '../../lib/confluence-sdk-errors.js';
+import * as createPageFixtures from '../fixtures/sdk_request/create_page/index.js';
+import * as updatePageFixtures from '../fixtures/sdk_request/update_page/index.js';
+import * as responseFixtures from '../fixtures/confluence_response/index.js';
 
 const sandbox = sinon.createSandbox();
 const basePath = '/wiki/rest/api/content';
