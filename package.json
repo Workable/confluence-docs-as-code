@@ -6,7 +6,7 @@
   "scripts": {
     "posttest": "eslint ./lib/**/*.js",
     "test": "c8 mocha",
-    "build": "ncc build lib/index.js --license licenses.txt",
+    "build": "ncc build lib/index.js --license licenses.txt --minify --source-map",
     "prepare": "husky install"
   },
   "author": "Eleftherios Chetzakis <eleftherios@workable.com>",
