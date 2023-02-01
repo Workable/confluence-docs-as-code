@@ -22,6 +22,9 @@ inputs:
   confluence_parent_page:
     description: 'The title of an existing page to use as parent'
     required: false
+  confluence_title_prefix:
+    description: 'This prefix will be prepended to all confluence page titles'
+    required: false
   kroki_enabled:
     description: 'When "yes" conversion of Mermaid & PlantUML graphs into images (png) using "kroki.io"'
     required: false
