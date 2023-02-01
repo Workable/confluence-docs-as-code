@@ -77,3 +77,8 @@ rectangle checkout {
 ## Internal Link
 
 [Other Page](other-page.md)
+
+## Internal with line break
+
+What happens [if link description contains
+a line break](other-page.md)?
