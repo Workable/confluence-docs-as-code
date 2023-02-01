@@ -6,6 +6,7 @@ describe('config', () => {
             confluence: {
                 host: 'https://tenant.atlassian.net',
                 parentPage: 'parent-page',
+                titlePrefix: 'title-prefix',
                 spaceKey: 'confluence-space-key',
                 token: 'api-token',
                 user: 'user@tenant.com'

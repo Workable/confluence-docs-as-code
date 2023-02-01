@@ -10,7 +10,14 @@ Atlassian Confluence Cloud wiki.
 * Uploads images as Confluence page attachments
 * Converts fenced code blocks to Confluence code macros
 * Renders *Mermaid* & *PlantUML* graphs to images (via [Kroki.io](https://kroki.io))
+* Add a common [prefix](#confluence_title_prefix) to all page titles
 * Restricts page update to [confluence_user](#confluence_user)
+
+## Limitations
+
+* Does not fully support nesting in the `nav` section of the [MkDocs Configuration](#mkdocs-configuration),
+  flattens all pages to one level.
+* Does not publish pages not described in the `nav` section.
 
 ## Requirements
 
@@ -85,6 +92,19 @@ For example if your space has a page with title **"My Documentation"** and you
 want to use it as the parent for your published documents, then set
 `confluence_parent_page` to `'My Documentation'`
 
+### `confluence_title_prefix`
+
+*Optional*. When set, this prefix will be prepended to all confluence page titles
+except your root page which is titled according to the `site_name` in your
+[MkDocs configuration](#mkdocs-configuration).
+
+For example, if you have a page with title `'My Page'` and the `confluence_title_prefix`
+is set to `'FOO:'` then the page will be created to confluence with the title
+`'FOO: My Page'`.
+
+This could be useful in cases that you want to publish multiple repos to the same
+confluence space, which requires each page title to be unique.
+
 ### `kroki_enabled`
 
 *Optional*. When set to `yes` enables rendering of [Mermaid](https://mermaid.js.org/)
@@ -115,7 +135,7 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v3
       - name: Publish to Confluence
-        uses: Workable/confluence-docs-as-code@v1.0
+        uses: Workable/confluence-docs-as-code@v1.1.0
         with:
           confluence_tenant: 'Your Confluence Account Name'
           confluence_space: 'The Confluence Space Key'
