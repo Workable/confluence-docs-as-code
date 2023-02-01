@@ -1,39 +1,57 @@
 import sinon from 'sinon';
+import { expect } from 'chai';
 import context from '../../lib/context.js';
 import logger from '../../lib/logger.js';
-import { expect } from 'chai';
-import { simple, noReadme, withUnsafeFiles } from '../fixtures/context/index.js';
+import config from '../../lib/config.js';
+import {
+    simple, noReadme, withUnsafeFiles, withTitlePrefix
+} from '../fixtures/context/index.js';
 
 const sandbox = sinon.createSandbox();
+
 describe('context', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
     describe('when mkdocs.yml file exists', () => {
         describe('when mkdocs.yml file has the expected format', () => {
-            describe('when README.md not exists', () => {
-                it('should parse mkdocs.yml file and return a context object without readMe', () => {
-                    context.getContext('./test/fixtures/samples/no_readme').should.be.eql(noReadme);
+            describe('when no title prefix has been configured', () => {
+                beforeEach(() => {
+                    sandbox.replace(config.confluence, 'titlePrefix', '');
+                });
+                describe('when README.md not exists', () => {
+                    it('should parse mkdocs.yml file and return a context object without readMe', () => {
+                        context.getContext('./test/fixtures/samples/no_readme').should.be.eql(noReadme);
+                    });
+                });
+                describe('when README.md exists', () => {
+                    it('should parse mkdocs.yml file and return a context object without readMe', () => {
+                        const basePath = './test/fixtures/samples/simple';
+                        context.getContext(basePath).should.be.eql(simple);
+                    });
+                });
+                describe('when mkdocs.yml has unsafe paths', () => {
+                    it('should mark unsafe files as not existent', () => {
+                        context.getContext('./test/fixtures/samples/unsafe_paths').should.be.eql(withUnsafeFiles);
+                    });
+                });
+                describe('when debug is enabled', () => {
+                    it('should debug log the context', () => {
+                        sandbox.stub(logger, 'isDebug').returns(true);
+                        const debug = sandbox.stub(logger, 'debug');
+                        const basePath = './test/fixtures/samples/simple';
+                        context.getContext(basePath).should.be.eql(simple);
+                        sandbox.assert.calledWith(debug, `Context:\n${JSON.stringify(simple, null, 2)}`);
+                    });
                 });
             });
-            describe('when README.md exists', () => {
-                it('should parse mkdocs.yml file and return a context object without readMe', () => {
+            describe('when title prefix configured', () => {
+                beforeEach(() => {
+                    sandbox.replace(config.confluence, 'titlePrefix', 'PFX:');
+                });
+                it('should prepend all page titles with the prefix configured', () => {
                     const basePath = './test/fixtures/samples/simple';
-                    context.getContext(basePath).should.be.eql(simple);
-                });
-            });
-            describe('when mkdocs.yml has unsafe paths', () => {
-                it('should mark unsafe files as not existent', () => {
-                    context.getContext('./test/fixtures/samples/unsafe_paths').should.be.eql(withUnsafeFiles);
-                });
-            });
-            describe('when debug is enabled', () => {
-                afterEach(() => {
-                    sandbox.restore();
-                });
-                it('should debug log the context', () => {
-                    sandbox.stub(logger, 'isDebug').returns(true);
-                    const debug = sandbox.stub(logger, 'debug');
-                    const basePath = './test/fixtures/samples/simple';
-                    context.getContext(basePath).should.be.eql(simple);
-                    sandbox.assert.calledWith(debug, `Context:\n${JSON.stringify(simple, null, 2)}`);
+                    context.getContext(basePath).should.be.eql(withTitlePrefix);
                 });
             });
         });
