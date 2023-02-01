@@ -347,7 +347,9 @@ describe('confluence-sdk', () => {
         let requestMock;
         const parentPageId = 1453;
         const query = qs.stringify({
-            expand: EXPAND_PROPERTIES
+            expand: EXPAND_PROPERTIES,
+            start: 0,
+            limit: 100
         });
         beforeEach(() => {
             requestMock = nock(sdkOpts.host, { reqheaders: requestHeaders }).get(
