@@ -142,5 +142,6 @@ jobs:
           confluence_user: ${{ secrets.CONFLUENCE_USER }}
           confluence_token: ${{ secrets.CONFLUENCE_TOKEN }}
           confluence_parent_page: 'The title of the page to use as parent' # Optional
+          confluence_title_prefix: 'My Prefix:' # Optional
           kroki_enabled: 'yes' # Optional
 ```
