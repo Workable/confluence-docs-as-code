@@ -135,7 +135,7 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v3
       - name: Publish to Confluence
-        uses: Workable/confluence-docs-as-code@v1.1.0
+        uses: Workable/confluence-docs-as-code@v1.2.0
         with:
           confluence_tenant: 'Your Confluence Account Name'
           confluence_space: 'The Confluence Space Key'
