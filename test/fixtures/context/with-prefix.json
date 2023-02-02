@@ -34,7 +34,7 @@
     }
   ],
   "readMe": {
-    "title": "PFX: Fixture Site Name",
+    "title": "Fixture Site Name",
     "path": "test/fixtures/samples/simple/README.md",
     "sha": "49ae38158ace003740c7b82edef78017ed71bc2a5ad85722e1880c0f44dafaf1",
     "exists": true
