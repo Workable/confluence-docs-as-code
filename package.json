@@ -1,6 +1,6 @@
 {
   "name": "md-to-confluence-action",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Github Action to publish your markdown documentation to Confluence",
   "main": "dist/index.js",
   "scripts": {
