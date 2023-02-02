@@ -78,6 +78,12 @@ rectangle checkout {
 
 [Other Page](other-page.md)
 
+## Internal Link With absolute path
+
+GitHub supports such paths, considering `/` to be the root of the repo
+
+[Other Page](/test/fixtures/markdown/other-page.md)
+
 ## Internal with line break
 
 What happens [if link description contains
