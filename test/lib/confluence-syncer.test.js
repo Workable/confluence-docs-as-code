@@ -179,18 +179,45 @@ describe('confluence-syncer', () => {
                     });
                     describe('when README.md exists', () => {
                         const html = '<h1>From README.md</h1>';
-                        const readMe = { path: '/path/to/README.md', sha: 'abc123' };
+                        const readMe = { path: '/path/to/README.md', sha: 'abc123', exists: true };
                         beforeEach(() => {
                             md2htmlMock.withArgs(readMe.path).returns({ html, images: [], graphs: [] });
                             getContextMock.returns({ siteName, repo, pages: [], readMe });
                         });
                         describe('when home page sha matches', () => {
-                            it('should not update the page', () => {
-                                return sync().then(() => {
-                                    sandbox.assert.notCalled(loggerMock.fail);
-                                    sandbox.assert.notCalled(sdkMock.createAttachment);
-                                    sandbox.assert.notCalled(sdkMock.createPage);
-                                    sandbox.assert.notCalled(sdkMock.updatePage);
+                            describe('when force update is disabled', () => {
+                                beforeEach(() => {
+                                    sandbox.replace(config.confluence, 'force_update', false);
+                                });
+                                it('should not update the page', () => {
+                                    return sync().then(() => {
+                                        sandbox.assert.notCalled(loggerMock.fail);
+                                        sandbox.assert.notCalled(sdkMock.createAttachment);
+                                        sandbox.assert.notCalled(sdkMock.createPage);
+                                        sandbox.assert.notCalled(sdkMock.updatePage);
+                                    });
+                                });
+                            });
+
+                            describe('when force update is enabled', () => {
+                                beforeEach(() => {
+                                    sandbox.replace(config.confluence, 'force_update', true);
+                                    getContextMock.returns({ siteName, repo, pages: [], readMe });
+                                });
+                                it('should update the page using the README.md as content', () => {
+                                    return sync().then(() => {
+                                        sandbox.assert.notCalled(loggerMock.fail);
+                                        sandbox.assert.notCalled(sdkMock.createAttachment);
+                                        sandbox.assert.calledWith(
+                                            sdkMock.updatePage,
+                                            existingPage.id,
+                                            existingPage.version + 1,
+                                            siteName,
+                                            html,
+                                            parentPage.id,
+                                            { repo, ...readMe }
+                                        );
+                                    });
                                 });
                             });
                         });
@@ -221,11 +248,53 @@ describe('confluence-syncer', () => {
         });
     });
     describe('sync child pages', () => {
+        const repo = 'git-repo';
+        const siteName = 'Site Name';
+        const existingPage = { id: 1, repo, sha: 'abc123', version: 1 };
+        const readMe = { path: '/path/to/README.md', sha: 'abc123' };
+        describe('when page content has not changed', () => {
+            const [path, sha] = ['docs/unchanged.md', 'abc345'];
+            const remotePages = [{ id: 100, path, sha, version: 1 }];
+            const localPages = [{ title: 'Unchanged', path, sha, exists: true }];
+            beforeEach(() => {
+                sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
+                sdkMock.findPage.withArgs(siteName).resolves(existingPage);
+                getContextMock.returns({ siteName, repo, readMe, pages: localPages });
+                sdkMock.getChildPages.withArgs(root).resolves(remotePages);
+            });
+            describe('when force update is disabled', () => {
+                beforeEach(() => {
+                    sandbox.replace(config.confluence, 'force_update', false);
+                });
+                it('should skip updating the unchanged page', () => {
+                    return sync().then(() => {
+                        sandbox.assert.notCalled(loggerMock.fail);
+                        sandbox.assert.notCalled(sdkMock.deletePage);
+                        sandbox.assert.notCalled(sdkMock.updatePage);
+                        sandbox.assert.notCalled(sdkMock.createPage);
+                    });
+                });
+            });
+            describe('when force update is enabled', () => {
+                const html = '<h1>Unchanged Page</h1>';
+                beforeEach(() => {
+                    sandbox.replace(config.confluence, 'force_update', true);
+                    md2htmlMock.returns({ html, images: [], graphs: [] });
+                    sdkMock.updatePage.resolves();
+                });
+                it('should also update unchanged pages', () => {
+                    return sync().then(() => {
+                        sandbox.assert.notCalled(loggerMock.fail);
+                        sandbox.assert.notCalled(sdkMock.deletePage);
+                        sandbox.assert.notCalled(sdkMock.createPage);
+                        sandbox.assert.calledWith(
+                            sdkMock.updatePage, 100, 2, 'Unchanged', html, root, { repo, path, sha }
+                        );
+                    });
+                });
+            });
+        });
         describe('when there are all kind of changed to be performed', () => {
-            const repo = 'git-repo';
-            const siteName = 'Site Name';
-            const readMe = { path: '/path/to/README.md', sha: 'abc123' };
-            const existingPage = { id: 1, repo, sha: 'abc123', version: 1 };
             const deletedPage = {
                 path: 'docs/deleted.md', sha: 'abc123', id: 100
             };
