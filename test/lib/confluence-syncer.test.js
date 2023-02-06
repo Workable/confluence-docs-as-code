@@ -187,7 +187,7 @@ describe('confluence-syncer', () => {
                         describe('when home page sha matches', () => {
                             describe('when force update is disabled', () => {
                                 beforeEach(() => {
-                                    sandbox.replace(config.confluence, 'force_update', false);
+                                    sandbox.replace(config.confluence, 'forceUpdate', false);
                                 });
                                 it('should not update the page', () => {
                                     return sync().then(() => {
@@ -201,7 +201,7 @@ describe('confluence-syncer', () => {
 
                             describe('when force update is enabled', () => {
                                 beforeEach(() => {
-                                    sandbox.replace(config.confluence, 'force_update', true);
+                                    sandbox.replace(config.confluence, 'forceUpdate', true);
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
                                 });
                                 it('should update the page using the README.md as content', () => {
@@ -264,7 +264,7 @@ describe('confluence-syncer', () => {
             });
             describe('when force update is disabled', () => {
                 beforeEach(() => {
-                    sandbox.replace(config.confluence, 'force_update', false);
+                    sandbox.replace(config.confluence, 'forceUpdate', false);
                 });
                 it('should skip updating the unchanged page', () => {
                     return sync().then(() => {
@@ -278,7 +278,7 @@ describe('confluence-syncer', () => {
             describe('when force update is enabled', () => {
                 const html = '<h1>Unchanged Page</h1>';
                 beforeEach(() => {
-                    sandbox.replace(config.confluence, 'force_update', true);
+                    sandbox.replace(config.confluence, 'forceUpdate', true);
                     md2htmlMock.returns({ html, images: [], graphs: [] });
                     sdkMock.updatePage.resolves();
                 });
