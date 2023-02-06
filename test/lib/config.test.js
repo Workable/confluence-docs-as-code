@@ -9,7 +9,8 @@ describe('config', () => {
                 titlePrefix: 'title-prefix',
                 spaceKey: 'confluence-space-key',
                 token: 'api-token',
-                user: 'user@tenant.com'
+                user: 'user@tenant.com',
+                force_update: true
             },
             kroki: {
                 enabled: true,

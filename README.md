@@ -6,6 +6,7 @@ Atlassian Confluence Cloud wiki.
 ## Features
 
 * Publishes only new or changed pages
+  * Optionally [force update](#confluence_force_update) all pages
 * Converts internal links to Confluence links
 * Uploads images as Confluence page attachments
 * Converts fenced code blocks to Confluence code macros
@@ -105,6 +106,12 @@ is set to `'FOO:'` then the page will be created to confluence with the title
 This could be useful in cases that you want to publish multiple repos to the same
 confluence space, which requires each page title to be unique.
 
+### `confluence_force_update`
+
+*Optional*. When set to `yes` all pages will be published to confluence including
+those that have not changed. Can be handy when used with the `workflow_dispatch`
+event as shown in the [example usage](#example-usage) below.
+
 ### `kroki_enabled`
 
 *Optional*. When set to `yes` enables rendering of [Mermaid](https://mermaid.js.org/)
@@ -127,6 +134,12 @@ on:
     paths:
       - "docs/**"
       - mkdocs.yml
+  workflow_dispatch:
+    inputs:
+      confluence_force_update:
+        description: 'Force update (yes/no)?'
+        required: false
+        default: 'no'
 
 jobs:
   publish-to-confluence:
@@ -135,7 +148,7 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v3
       - name: Publish to Confluence
-        uses: Workable/confluence-docs-as-code@v1.2.1
+        uses: Workable/confluence-docs-as-code@v1
         with:
           confluence_tenant: 'Your Confluence Account Name'
           confluence_space: 'The Confluence Space Key'
@@ -143,5 +156,6 @@ jobs:
           confluence_token: ${{ secrets.CONFLUENCE_TOKEN }}
           confluence_parent_page: 'The title of the page to use as parent' # Optional
           confluence_title_prefix: 'My Prefix:' # Optional
+          confluence_force_update: ${{ github.event.inputs.confluence_force_update }} # Optional
           kroki_enabled: 'yes' # Optional
 ```
