@@ -7,6 +7,7 @@ Atlassian Confluence Cloud wiki.
 
 * Publishes only new or changed pages
   * Optionally [force update](#confluence_force_update) all pages
+  * Force update all pages on new major/minor release
 * Converts internal links to Confluence links
 * Uploads images as Confluence page attachments
 * Converts fenced code blocks to Confluence code macros
