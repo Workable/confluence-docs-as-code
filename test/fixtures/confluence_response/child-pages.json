@@ -1,28 +1,40 @@
 {
-    "results": [
-        {
-            "id": "1821",
-            "title": "Test",
-            "version": {
-                "number": 18
-            },
-            "metadata": {
-                "properties": {
-                    "repo": {
-                        "key": "repo",
-                        "value": "https://github.com/Org/Repo"
-                    },
-                    "path": {
-                        "key": "path",
-                        "value": "foo/bar/doc.md"
-                    },
-                    "sha": {
-                        "key": "sha",
-                        "value": "Zm9vL2Jhci9kb2MubWQ="
-                    }
-                }
-            },
-            "size": 1
+  "results": [
+    {
+      "id": "1821",
+      "title": "Test",
+      "version": {
+        "number": 18
+      },
+      "metadata": {
+        "properties": {
+          "repo": {
+            "key": "repo",
+            "value": "https://github.com/Org/Repo"
+          },
+          "path": {
+            "key": "path",
+            "value": "foo/bar/doc.md"
+          },
+          "sha": {
+            "key": "sha",
+            "value": "Zm9vL2Jhci9kb2MubWQ="
+          },
+          "git_sha": {
+            "key": "git_sha",
+            "value": "git_sha"
+          },
+          "git_ref": {
+            "key": "git_ref",
+            "value": "git_ref"
+          },
+          "publisher_version": {
+            "key": "publisher_version",
+            "value": "1.0.0"
+          }
         }
-    ]
+      },
+      "size": 1
+    }
+  ]
 }

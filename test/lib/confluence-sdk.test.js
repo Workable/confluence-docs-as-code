@@ -27,7 +27,10 @@ const EXPAND_PROPERTIES = [
     'version',
     'metadata.properties.repo',
     'metadata.properties.path',
-    'metadata.properties.sha'
+    'metadata.properties.sha',
+    'metadata.properties.git_ref',
+    'metadata.properties.git_sha',
+    'metadata.properties.publisher_version'
 ].join(',');
 
 describe('confluence-sdk', () => {
@@ -61,7 +64,10 @@ describe('confluence-sdk', () => {
                     repo: 'https://github.com/Org/Repo',
                     sha: 'Zm9vL2Jhci9kb2MubWQ=',
                     title: 'Test',
-                    version: 18
+                    version: 18,
+                    git_ref: 'git_ref',
+                    git_sha: 'git_sha',
+                    publisher_version: '1.0.0'
                 };
                 requestMock.reply(200, responseFixtures.childPages);
                 return sdk.findPage(title).should.eventually.eql(expected);
@@ -389,7 +395,10 @@ describe('confluence-sdk', () => {
                         repo: 'https://github.com/Org/Repo',
                         sha: 'Zm9vL2Jhci9kb2MubWQ=',
                         title: 'Test',
-                        version: 18
+                        version: 18,
+                        git_ref: 'git_ref',
+                        git_sha: 'git_sha',
+                        publisher_version: '1.0.0'
                     }
                 ];
                 requestMock.reply(200, responseFixtures.childPages);
