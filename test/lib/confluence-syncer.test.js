@@ -19,6 +19,11 @@ describe('confluence-syncer', () => {
     let toPngMock;
     const root = 1;
     const parentPage = { id: 1 };
+    const commonMeta = {
+        git_ref: config.github.refName,
+        git_sha: config.github.sha,
+        publisher_version: config.version
+    };
 
     beforeEach(() => {
         [
@@ -103,14 +108,16 @@ describe('confluence-syncer', () => {
                         });
                         it('should create the page using the site name as content', () => {
                             return sync().then(() => {
-                                sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, { repo });
                                 sandbox.assert.notCalled(loggerMock.fail);
+                                sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, { repo, ...commonMeta });
                             });
                         });
                     });
                     describe('when README.md exists', () => {
                         const html = '<h1>From README.md</h1>';
                         const readMe = { path: '/path/to/README.md', sha: 'abc123', exists: true };
+                        const meta = { repo, ...readMe, ...commonMeta };
+                        delete meta.exists;
                         describe('when README.md contains no images', () => {
                             beforeEach(() => {
                                 md2htmlMock.withArgs(readMe.path).returns({ html, images: [], graphs: [] });
@@ -118,9 +125,9 @@ describe('confluence-syncer', () => {
                             });
                             it('should create the page using the README.md as content', () => {
                                 return sync().then(() => {
-                                    sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, { repo, ...readMe });
-                                    sandbox.assert.notCalled(sdkMock.createAttachment);
                                     sandbox.assert.notCalled(loggerMock.fail);
+                                    sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, meta);
+                                    sandbox.assert.notCalled(sdkMock.createAttachment);
                                 });
                             });
                         });
@@ -133,9 +140,9 @@ describe('confluence-syncer', () => {
                             });
                             it('should create the page using the content and images from README.md', () => {
                                 return sync().then(() => {
-                                    sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, { repo, ...readMe });
-                                    sandbox.assert.calledWith(sdkMock.createAttachment, id, resolve('image/path/image-file.png'));
                                     sandbox.assert.notCalled(loggerMock.fail);
+                                    sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, meta);
+                                    sandbox.assert.calledWith(sdkMock.createAttachment, id, resolve('image/path/image-file.png'));
                                 });
                             });
                         });
@@ -158,7 +165,7 @@ describe('confluence-syncer', () => {
                         describe('when home page sha does not match', () => {
                             it('should update the page using the site name as content', () => {
                                 return sync().then(() => {
-                                    sandbox.assert.calledWith(sdkMock.updatePage, existingPage.id, existingPage.version + 1, siteName, html, parentPage.id, { repo });
+                                    sandbox.assert.calledWith(sdkMock.updatePage, existingPage.id, existingPage.version + 1, siteName, html, parentPage.id, { repo, ...commonMeta });
                                     sandbox.assert.notCalled(sdkMock.createAttachment);
                                     sandbox.assert.notCalled(loggerMock.fail);
                                 });
@@ -200,6 +207,8 @@ describe('confluence-syncer', () => {
                             });
 
                             describe('when force update is enabled', () => {
+                                const meta = { repo, ...readMe, ...commonMeta };
+                                delete meta.exists;
                                 beforeEach(() => {
                                     sandbox.replace(config.confluence, 'forceUpdate', true);
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
@@ -215,7 +224,7 @@ describe('confluence-syncer', () => {
                                             siteName,
                                             html,
                                             parentPage.id,
-                                            { repo, ...readMe }
+                                            meta
                                         );
                                     });
                                 });
@@ -223,6 +232,8 @@ describe('confluence-syncer', () => {
                         });
                         describe('when home page sha does not match', () => {
                             const readMe = { path: '/path/to/README.md', sha: 'abc456', exists: true };
+                            const meta = { repo, ...readMe, ...commonMeta };
+                            delete meta.exists;
                             beforeEach(() => {
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
                             });
@@ -237,7 +248,7 @@ describe('confluence-syncer', () => {
                                         siteName,
                                         html,
                                         parentPage.id,
-                                        { repo, ...readMe }
+                                        meta
                                     );
                                 });
                             });
@@ -288,7 +299,7 @@ describe('confluence-syncer', () => {
                         sandbox.assert.notCalled(sdkMock.deletePage);
                         sandbox.assert.notCalled(sdkMock.createPage);
                         sandbox.assert.calledWith(
-                            sdkMock.updatePage, 100, 2, 'Unchanged', html, root, { repo, path, sha }
+                            sdkMock.updatePage, 100, 2, 'Unchanged', html, root, { repo, path, sha, ...commonMeta }
                         );
                     });
                 });
@@ -334,7 +345,7 @@ describe('confluence-syncer', () => {
                         createPage.title,
                         createPage.html,
                         root,
-                        { repo, path: createPage.path, sha: createPage.sha }
+                        { repo, path: createPage.path, sha: createPage.sha, ...commonMeta }
                     );
                     sandbox.assert.calledWith(
                         sdkMock.updatePage,
@@ -343,7 +354,7 @@ describe('confluence-syncer', () => {
                         updatePage.title,
                         updatePage.html,
                         root,
-                        { repo, path: updatePage.path, sha: 'abc456' }
+                        { repo, path: updatePage.path, sha: 'abc456', ...commonMeta }
                     );
                     sandbox.assert.calledWith(sdkMock.deletePage, deletedPage.id);
                     // Attachments
