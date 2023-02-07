@@ -24,6 +24,7 @@ describe('confluence-syncer', () => {
         git_sha: config.github.sha,
         publisher_version: config.version
     };
+    const [majorVer, minorVer, patchVer] = config.version.split('.').map(i => Number.parseInt(i));
 
     beforeEach(() => {
         [
@@ -153,7 +154,7 @@ describe('confluence-syncer', () => {
                     const repo = 'repo';
                     const siteName = 'Site Name';
                     const html = `<h1>${siteName}</h1>`;
-                    const existingPage = { id: 9, repo, sha: 'abc123', version: 10 };
+                    const existingPage = { id: 9, repo, sha: 'abc123', version: 10, publisher_version: config.version };
                     beforeEach(() => {
                         sdkMock.findPage.withArgs(siteName).resolves(existingPage);
                         sdkMock.getChildPages.resolves([]);
@@ -229,6 +230,30 @@ describe('confluence-syncer', () => {
                                     });
                                 });
                             });
+                            describe('when publisher version changes', () => {
+                                const meta = { repo, ...readMe, ...commonMeta };
+                                delete meta.exists;
+                                beforeEach(() => {
+                                    sandbox.replace(config.confluence, 'forceUpdate', false);
+                                    getContextMock.returns({ siteName, repo, pages: [], readMe });
+                                    existingPage.publisher_version = `${majorVer + 1}.0.0`;
+                                });
+                                it('should update the page using the README.md as content', () => {
+                                    return sync().then(() => {
+                                        sandbox.assert.notCalled(loggerMock.fail);
+                                        sandbox.assert.notCalled(sdkMock.createAttachment);
+                                        sandbox.assert.calledWith(
+                                            sdkMock.updatePage,
+                                            existingPage.id,
+                                            existingPage.version + 1,
+                                            siteName,
+                                            html,
+                                            parentPage.id,
+                                            meta
+                                        );
+                                    });
+                                });
+                            });
                         });
                         describe('when home page sha does not match', () => {
                             const readMe = { path: '/path/to/README.md', sha: 'abc456', exists: true };
@@ -261,11 +286,12 @@ describe('confluence-syncer', () => {
     describe('sync child pages', () => {
         const repo = 'git-repo';
         const siteName = 'Site Name';
-        const existingPage = { id: 1, repo, sha: 'abc123', version: 1 };
+        const publisher_version = config.version;
+        const existingPage = { id: 1, repo, sha: 'abc123', version: 1, publisher_version };
         const readMe = { path: '/path/to/README.md', sha: 'abc123' };
         describe('when page content has not changed', () => {
             const [path, sha] = ['docs/unchanged.md', 'abc345'];
-            const remotePages = [{ id: 100, path, sha, version: 1 }];
+            const remotePages = [{ id: 100, path, sha, version: 1, publisher_version }];
             const localPages = [{ title: 'Unchanged', path, sha, exists: true }];
             beforeEach(() => {
                 sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
@@ -292,6 +318,63 @@ describe('confluence-syncer', () => {
                     sandbox.replace(config.confluence, 'forceUpdate', true);
                     md2htmlMock.returns({ html, images: [], graphs: [] });
                     sdkMock.updatePage.resolves();
+                });
+                it('should also update unchanged pages', () => {
+                    return sync().then(() => {
+                        sandbox.assert.notCalled(loggerMock.fail);
+                        sandbox.assert.notCalled(sdkMock.deletePage);
+                        sandbox.assert.notCalled(sdkMock.createPage);
+                        sandbox.assert.calledWith(
+                            sdkMock.updatePage, 100, 2, 'Unchanged', html, root, { repo, path, sha, ...commonMeta }
+                        );
+                    });
+                });
+            });
+            describe('when publisher version changes', () => {
+                const html = '<h1>Unchanged Page</h1>';
+                beforeEach(() => {
+                    sandbox.replace(config.confluence, 'forceUpdate', false);
+                    md2htmlMock.returns({ html, images: [], graphs: [] });
+                    sdkMock.updatePage.resolves();
+                });
+                describe('when patch version changes', () => {
+                    it('should skip updating the unchanged page', () => {
+                        remotePages[0].publisher_version = `${majorVer}.${minorVer}.${patchVer + 1}`;
+                        return sync().then(() => {
+                            sandbox.assert.notCalled(loggerMock.fail);
+                            sandbox.assert.notCalled(sdkMock.deletePage);
+                            sandbox.assert.notCalled(sdkMock.updatePage);
+                            sandbox.assert.notCalled(sdkMock.createPage);
+                        });
+                    });
+                });
+                [
+                    ['version missing', null],
+                    ['major version changes', `${majorVer + 1}.0.0`],
+                    ['minor version changes', `${majorVer}.${minorVer + 1}.0`]
+                ].forEach(testCase => {
+                    describe(`when publisher ${testCase[0]}`, () => {
+                        it('should also update unchanged pages', () => {
+                            remotePages[0].publisher_version = testCase[1];
+                            return sync().then(() => {
+                                sandbox.assert.notCalled(loggerMock.fail);
+                                sandbox.assert.notCalled(sdkMock.deletePage);
+                                sandbox.assert.notCalled(sdkMock.createPage);
+                                sandbox.assert.calledWith(
+                                    sdkMock.updatePage, 100, 2, 'Unchanged', html, root, { repo, path, sha, ...commonMeta }
+                                );
+                            });
+                        });
+                    });
+                });
+            });
+            describe('when publisher version missing', () => {
+                const html = '<h1>Unchanged Page</h1>';
+                beforeEach(() => {
+                    sandbox.replace(config.confluence, 'forceUpdate', false);
+                    md2htmlMock.returns({ html, images: [], graphs: [] });
+                    sdkMock.updatePage.resolves();
+                    remotePages[0].publisher_version = null;
                 });
                 it('should also update unchanged pages', () => {
                     return sync().then(() => {
