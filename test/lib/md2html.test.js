@@ -14,12 +14,12 @@ describe('md2html', () => {
     describe('render', () => {
         describe('when file argument is not a string', () => {
             it('should throw error', () => {
-                expect(() => md2html.render()).to.throw('file parameter is required');
+                expect(() => md2html.render()).to.throw('path parameter is required');
             });
         });
         describe('when file is not md', () => {
             it('should throw error', () => {
-                expect(() => md2html.render('foo.txt')).to.throw('foo.txt is not a markdown (.md) file');
+                expect(() => md2html.render({ path: 'foo.txt' })).to.throw('foo.txt is not a markdown (.md) file');
             });
         });
         describe('when a markdown file is given', async () => {
@@ -42,7 +42,7 @@ describe('md2html', () => {
                 const htmlFile = path.resolve(fixturesPath, 'full.html');
                 it('should render the markdown, save mermaid graph to file, return image and graph references', () => {
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
-                    const { html, images, graphs } = md2html.render(mdFile, pageRefs);
+                    const { html, images, graphs } = md2html.render({ path: mdFile }, pageRefs);
                     html.should.equal(expectedHtml);
                     images.should.eql(expectedImages);
                     graphs.should.eql(expectedGraphs);
@@ -57,11 +57,27 @@ describe('md2html', () => {
                 it('should render the markdown to html and return only image references', () => {
                     const expectedGraphs = [];
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
-                    const { html, images, graphs } = md2html.render(mdFile, pageRefs);
+                    const { html, images, graphs } = md2html.render({ path: mdFile }, pageRefs);
                     html.should.equal(expectedHtml);
                     images.should.eql(expectedImages);
                     graphs.should.eql(expectedGraphs);
                     existsSync(mmdFile).should.be.false;
+                });
+                describe('when github url is present', () => {
+                    const htmlFile = path.resolve(fixturesPath, 'with-footer.html');
+                    it('should include a footer with a link to the source on github', () => {
+                        const expectedGraphs = [];
+                        const expectedHtml = readFileSync(htmlFile, 'utf8');
+                        const page = {
+                            path: mdFile,
+                            githubUrl: 'https://github.com/account/repo/blob/branch/docs/full.md'
+                        };
+                        const { html, images, graphs } = md2html.render(page, pageRefs);
+                        html.should.equal(expectedHtml);
+                        images.should.eql(expectedImages);
+                        graphs.should.eql(expectedGraphs);
+                        existsSync(mmdFile).should.be.false;
+                    });
                 });
             });
         });

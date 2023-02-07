@@ -121,7 +121,7 @@ describe('confluence-syncer', () => {
                         delete meta.exists;
                         describe('when README.md contains no images', () => {
                             beforeEach(() => {
-                                md2htmlMock.withArgs(readMe.path).returns({ html, images: [], graphs: [] });
+                                md2htmlMock.withArgs(readMe).returns({ html, images: [], graphs: [] });
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
                             });
                             it('should create the page using the README.md as content', () => {
@@ -135,7 +135,7 @@ describe('confluence-syncer', () => {
                         describe('when README.md contains images', () => {
                             const id = 1;
                             beforeEach(() => {
-                                md2htmlMock.withArgs(readMe.path).returns({ html, images: ['image/path/image-file.png'], graphs: [] });
+                                md2htmlMock.withArgs(readMe).returns({ html, images: ['image/path/image-file.png'], graphs: [] });
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
                                 sdkMock.createPage.returns(id);
                             });
@@ -187,12 +187,12 @@ describe('confluence-syncer', () => {
                     });
                     describe('when README.md exists', () => {
                         const html = '<h1>From README.md</h1>';
-                        const readMe = { path: '/path/to/README.md', sha: 'abc123', exists: true };
-                        beforeEach(() => {
-                            md2htmlMock.withArgs(readMe.path).returns({ html, images: [], graphs: [] });
-                            getContextMock.returns({ siteName, repo, pages: [], readMe });
-                        });
                         describe('when home page sha matches', () => {
+                            const readMe = { path: '/path/to/README.md', sha: 'abc123', exists: true };
+                            beforeEach(() => {
+                                getContextMock.returns({ siteName, repo, pages: [], readMe });
+                                md2htmlMock.withArgs(readMe).returns({ html, images: [], graphs: [] });
+                            });
                             describe('when force update is disabled', () => {
                                 beforeEach(() => {
                                     sandbox.replace(config.confluence, 'forceUpdate', false);
@@ -261,6 +261,7 @@ describe('confluence-syncer', () => {
                             delete meta.exists;
                             beforeEach(() => {
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
+                                md2htmlMock.withArgs(readMe).returns({ html, images: [], graphs: [] });
                             });
                             it('should update the page using the README.md as content', () => {
                                 return sync().then(() => {
@@ -411,9 +412,9 @@ describe('confluence-syncer', () => {
                 sdkMock.deletePage.resolves();
                 sdkMock.getChildPages.withArgs(root).resolves(remotePages);
                 getContextMock.returns({ siteName, repo, readMe, pages: localPages });
-                md2htmlMock.withArgs(resolve(createPage.path), pageRefs)
+                md2htmlMock.withArgs(localPages[0], pageRefs)
                     .returns({ html: createPage.html, images: createPage.images, graphs: createPage.graphs });
-                md2htmlMock.withArgs(resolve(updatePage.path), pageRefs)
+                md2htmlMock.withArgs(localPages[1], pageRefs)
                     .returns({ html: updatePage.html, images: updatePage.images, graphs: updatePage.graphs });
                 toPngMock.withArgs(updatePage.graphs[0]).resolves(updatePage.graphs[0].slice(0, -4) + '.png');
                 toPngMock.withArgs(createPage.graphs[0]).resolves(createPage.graphs[0].slice(0, -4) + '.png');
