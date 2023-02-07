@@ -10,6 +10,9 @@ import {
 const sandbox = sinon.createSandbox();
 
 describe('context', () => {
+    beforeEach(() => {
+        sandbox.replace(config.github, 'refName', 'branch-name');
+    });
     afterEach(() => {
         sandbox.restore();
     });
