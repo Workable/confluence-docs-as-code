@@ -25,6 +25,10 @@ inputs:
   confluence_title_prefix:
     description: 'This prefix will be prepended to all confluence page titles'
     required: false
+  confluence_force_update:
+    description: 'When set to "yes" all pages will be published to confluence including unchanged'
+    required: false
+    default: 'no'
   kroki_enabled:
     description: 'When "yes" conversion of Mermaid & PlantUML graphs into images (png) using "kroki.io"'
     required: false
