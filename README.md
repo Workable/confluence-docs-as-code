@@ -113,13 +113,40 @@ confluence space, which requires each page title to be unique.
 those that have not changed. Can be handy when used with the `workflow_dispatch`
 event as shown in the [example usage](#example-usage) below.
 
-### `kroki_enabled`
+### `kroki_enabled` (*Deprecated*)
 
 *Optional*. When set to `yes` enables rendering of [Mermaid](https://mermaid.js.org/)
 and [PlantUML](https://plantuml.com/) graphs into images (`.png`)
 via [Kroki.io](https://kroki.io/) service.
 
 Defaults to `yes`.
+
+> ⚠️ Will be removed in future releases in favour of the more fine-grained
+> [`mermaid_renderer`](#mermaid_renderer) and [`plantuml_renderer`](#plantuml_renderer)
+> options below.
+
+### `mermaid_renderer`
+
+*Optional*. Can be one of:
+
+* `'none'`: will not render
+* `'kroki'`: will use [Kroki.io](https://kroki.io) to render to `png`
+* `'mermaid-plugin'`: will upload the diagram source and render using
+  [Mermaid Diagrams for Confluence](https://marketplace.atlassian.com/apps/1226567/mermaid-diagrams-for-confluence?tab=overview&hosting=cloud) add-on
+
+> ⚠️ If not explicitly defined, falls back to [`kroki_enabled`](#kroki_enabled-deprecated)
+> option in order to provide backwards compatibility
+
+### `plantuml_renderer`
+
+*Optional*. Can be one of:
+
+* `'none'`: will not render
+* `'kroki'`: will use [Kroki.io](https://kroki.io) to render to `png`
+* `'plantuml'`: will use the diagram source and render using [plantuml.com](https://plantuml.com/)
+
+> ⚠️ If not explicitly defined, falls back to [`kroki_enabled`](#kroki_enabled-deprecated)
+> option in order to provide backwards compatibility
 
 ## Example usage
 
@@ -155,8 +182,10 @@ jobs:
           confluence_space: 'The Confluence Space Key'
           confluence_user: ${{ secrets.CONFLUENCE_USER }}
           confluence_token: ${{ secrets.CONFLUENCE_TOKEN }}
-          confluence_parent_page: 'The title of the page to use as parent' # Optional
+          confluence_parent_page: The title of the page to use as parent # Optional
           confluence_title_prefix: 'My Prefix:' # Optional
           confluence_force_update: ${{ github.event.inputs.confluence_force_update }} # Optional
-          kroki_enabled: 'yes' # Optional
+          kroki_enabled: 'no' # Optional
+          mermaid_renderer: none # Optional
+          plantuml_renderer: none # Optional
 ```

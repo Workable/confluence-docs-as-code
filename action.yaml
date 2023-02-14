@@ -33,3 +33,9 @@ inputs:
     description: 'When "yes" conversion of Mermaid & PlantUML graphs into images (png) using "kroki.io"'
     required: false
     default: 'yes'
+  mermaid_renderer:
+    description: ''
+    required: false
+  plantuml_renderer:
+    description: ''
+    required: false
