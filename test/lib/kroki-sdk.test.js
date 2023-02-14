@@ -4,26 +4,20 @@ import KrokiSdk from '../../lib/kroki-sdk.js';
 
 describe('kroki-sdk', () => {
     let sdk;
-    const sdkOpts = {
-        host: 'https://kroki.io',
-        supportedTypes: {
-            '.mmd': 'mermaid',
-            '.puml': 'plantuml'
-        }
-    };
+    const baseUrl = 'https://kroki.io';
     beforeEach(() => {
-        sdk = new KrokiSdk(sdkOpts);
+        sdk = new KrokiSdk(baseUrl);
     });
     describe('toPng', () => {
         describe('when input file has extension other that .mmd', () => {
             it('should throw error', () => {
-                return sdk.toPng('file.txt')
-                    .should.be.rejectedWith('File extension .txt is not one of supported types [".mmd", ".puml"]');
+                return sdk.toPng({ type: 'text' })
+                    .should.be.rejectedWith('Graph type text is not one of supported ["mermaid", "plantuml"]');
             });
         });
         describe('when input file does not exist', () => {
             it('should throw error', () => {
-                return sdk.toPng('not_existent_file.mmd')
+                return sdk.toPng({ path: 'not_existent_file.mmd', type: 'mermaid' })
                     .should.be.rejectedWith('File not_existent_file.mmd not found');
             });
         });
@@ -31,17 +25,17 @@ describe('kroki-sdk', () => {
             const src = 'test/fixtures/graphs/mermaid.mmd';
             describe('when the request is not successful', () => {
                 beforeEach(() => {
-                    nock(sdk.host).post('/mermaid/png').reply(400);
+                    nock(baseUrl).post('/mermaid/png').reply(400);
                 });
                 it('should return undefined', () => {
-                    return sdk.toPng(src).should.eventually.be.undefined;
+                    return sdk.toPng({ path: src, type: 'mermaid' }).should.eventually.be.undefined;
                 });
             });
             describe('when the request is successful', () => {
                 const samplePng = 'test/fixtures/images/img-1.png';
                 const dest = 'test/fixtures/graphs/mermaid.png';
                 beforeEach(() => {
-                    nock(sdk.host).post('/mermaid/png').reply(200, createReadStream(samplePng));
+                    nock(baseUrl).post('/mermaid/png').reply(200, createReadStream(samplePng));
                 });
                 afterEach(() => {
                     if (existsSync(dest)) {
@@ -49,7 +43,7 @@ describe('kroki-sdk', () => {
                     }
                 });
                 it('should write the png response to file and return the path', () => {
-                    return sdk.toPng(src).should.eventually.be.equal(dest);
+                    return sdk.toPng({ path: src, type: 'mermaid' }).should.eventually.be.equal(dest);
                 });
             });
         });
@@ -57,17 +51,17 @@ describe('kroki-sdk', () => {
             const src = 'test/fixtures/graphs/plantuml.puml';
             describe('when the request is not successful', () => {
                 beforeEach(() => {
-                    nock(sdk.host).post('/plantuml/png').reply(400);
+                    nock(baseUrl).post('/plantuml/png').reply(400);
                 });
                 it('should return undefined', () => {
-                    return sdk.toPng(src).should.eventually.be.undefined;
+                    return sdk.toPng({ path: src, type: 'plantuml' }).should.eventually.be.undefined;
                 });
             });
             describe('when the request is successful', () => {
                 const samplePng = 'test/fixtures/images/img-1.png';
                 const dest = 'test/fixtures/graphs/plantuml.png';
                 beforeEach(() => {
-                    nock(sdk.host).post('/plantuml/png').reply(200, createReadStream(samplePng));
+                    nock(baseUrl).post('/plantuml/png').reply(200, createReadStream(samplePng));
                 });
                 afterEach(() => {
                     if (existsSync(dest)) {
@@ -75,7 +69,7 @@ describe('kroki-sdk', () => {
                     }
                 });
                 it('should write the png response to file and return the path', () => {
-                    return sdk.toPng(src).should.eventually.be.equal(dest);
+                    return sdk.toPng({ path: src, type: 'plantuml' }).should.eventually.be.equal(dest);
                 });
             });
         });
