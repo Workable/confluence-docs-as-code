@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { sync } from '../../lib/confluence-syncer.js';
 import ConfluenceSDK from '../../lib/confluence-sdk.js';
 import KrokiSDK from '../../lib/kroki-sdk.js';
+import PlantUmlSdk from '../../lib/plantuml-sdk.js';
 import logger from '../../lib/logger.js';
 import context from '../../lib/context.js';
 import config from '../../lib/config.js';
@@ -16,9 +17,10 @@ describe('confluence-syncer', () => {
     let sdkMock = {};
     let loggerMock = {};
     let md2htmlMock;
-    let toPngMock;
-    const root = 1;
-    const parentPage = { id: 1 };
+    let krokiMock;
+    let plantUmlMock;
+    // const root = 1;
+    // const parentPage = { id: 1 };
     const commonMeta = {
         git_ref: config.github.refName,
         git_sha: config.github.sha,
@@ -46,7 +48,8 @@ describe('confluence-syncer', () => {
         });
         getContextMock = sandbox.stub(context, 'getContext');
         md2htmlMock = sandbox.stub(md2html, 'render');
-        toPngMock = sandbox.stub(KrokiSDK.prototype, 'toPng');
+        krokiMock = sandbox.stub(KrokiSDK.prototype, 'toPng');
+        plantUmlMock = sandbox.stub(PlantUmlSdk.prototype, 'toPng');
     });
     afterEach(() => {
         sandbox.restore();
@@ -92,12 +95,12 @@ describe('confluence-syncer', () => {
                 });
             });
             describe('when parent page exists', () => {
+                const { repo, siteName, parentPage } = prepareState();
                 beforeEach(() => {
                     sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
                 });
                 describe('when home page does not exist', () => {
-                    const repo = 'repo';
-                    const siteName = 'Site Name';
+                    const { repo, siteName } = prepareState();
                     const html = `<h1>${siteName}</h1>`;
                     beforeEach(() => {
                         sdkMock.findPage.withArgs(siteName).resolves();
@@ -151,10 +154,8 @@ describe('confluence-syncer', () => {
                     });
                 });
                 describe('when home page exists', () => {
-                    const repo = 'repo';
-                    const siteName = 'Site Name';
+                    const { repo, siteName, existingPage } = prepareState();
                     const html = `<h1>${siteName}</h1>`;
-                    const existingPage = { id: 9, repo, sha: 'abc123', version: 10, publisher_version: config.version };
                     beforeEach(() => {
                         sdkMock.findPage.withArgs(siteName).resolves(existingPage);
                         sdkMock.getChildPages.resolves([]);
@@ -256,7 +257,8 @@ describe('confluence-syncer', () => {
                             });
                         });
                         describe('when home page sha does not match', () => {
-                            const readMe = { path: '/path/to/README.md', sha: 'abc456', exists: true };
+                            const { readMe, existingPage } = prepareState();
+                            readMe.exists = true;
                             const meta = { repo, ...readMe, ...commonMeta };
                             delete meta.exists;
                             beforeEach(() => {
@@ -285,11 +287,8 @@ describe('confluence-syncer', () => {
         });
     });
     describe('sync child pages', () => {
-        const repo = 'git-repo';
-        const siteName = 'Site Name';
         const publisher_version = config.version;
-        const existingPage = { id: 1, repo, sha: 'abc123', version: 1, publisher_version };
-        const readMe = { path: '/path/to/README.md', sha: 'abc123' };
+        const { root, repo, parentPage, siteName, existingPage, readMe } = prepareState();
         describe('when page content has not changed', () => {
             const [path, sha] = ['docs/unchanged.md', 'abc345'];
             const remotePages = [{ id: 100, path, sha, version: 1, publisher_version }];
@@ -390,67 +389,119 @@ describe('confluence-syncer', () => {
             });
         });
         describe('when there are all kind of changed to be performed', () => {
-            const deletedPage = {
-                path: 'docs/deleted.md', sha: 'abc123', id: 100
-            };
-            const updatePage = {
-                title: 'Updated Page', path: 'docs/updated.md', sha: 'abc123', html: '<h1>Updated Page</h1>',
-                images: ['update-page-image.png'], graphs: ['update-page-graph.mmd'], repo, version: 1, id: 200
-            };
-            const createPage = {
-                title: 'Created Page', path: 'docs/created.md', sha: 'abc456', html: '<h1>Created Page</h1>',
-                images: ['create-page-image.png'], graphs: ['create-page-graph.mmd', 'unprocessable-graph.mmd'], repo, id: 300
-            };
-            const remotePages = [deletedPage, updatePage].map(({ path, sha, version, id }) => ({ id, path, sha, version }));
-            const localPages = [createPage, updatePage].map(({ path, title }) => ({ title, path, sha: 'abc456', exists: true }));
-            const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
-            beforeEach(() => {
-                sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
-                sdkMock.findPage.withArgs(siteName).resolves(existingPage);
-                sdkMock.createPage.resolves(createPage.id);
-                sdkMock.updatePage.resolves();
-                sdkMock.deletePage.resolves();
-                sdkMock.getChildPages.withArgs(root).resolves(remotePages);
-                getContextMock.returns({ siteName, repo, readMe, pages: localPages });
-                md2htmlMock.withArgs(localPages[0], pageRefs)
-                    .returns({ html: createPage.html, images: createPage.images, graphs: createPage.graphs });
-                md2htmlMock.withArgs(localPages[1], pageRefs)
-                    .returns({ html: updatePage.html, images: updatePage.images, graphs: updatePage.graphs });
-                toPngMock.withArgs(updatePage.graphs[0]).resolves(updatePage.graphs[0].slice(0, -4) + '.png');
-                toPngMock.withArgs(createPage.graphs[0]).resolves(createPage.graphs[0].slice(0, -4) + '.png');
-                toPngMock.withArgs(createPage.graphs[1]).resolves();
+            describe('when all graphs rendered with kroki', () => {
+                const renderers = ['kroki', 'kroki'];
+                const state = prepareState(renderers);
+                beforeEach(() => {
+                    prepareMocks(state);
+                });
+                it('should sync page changes with attachments', () => {
+                    return assertSync(state);
+                });
             });
-            it('should sync page changes with attachments', () => {
-                return sync().then(() => {
-                    sandbox.assert.notCalled(loggerMock.fail);
-                    sandbox.assert.callOrder(sdkMock.deletePage, sdkMock.updatePage, sdkMock.createPage);
-                    sandbox.assert.calledWith(
-                        sdkMock.createPage,
-                        createPage.title,
-                        createPage.html,
-                        root,
-                        { repo, path: createPage.path, sha: createPage.sha, ...commonMeta }
-                    );
-                    sandbox.assert.calledWith(
-                        sdkMock.updatePage,
-                        updatePage.id,
-                        updatePage.version + 1,
-                        updatePage.title,
-                        updatePage.html,
-                        root,
-                        { repo, path: updatePage.path, sha: 'abc456', ...commonMeta }
-                    );
-                    sandbox.assert.calledWith(sdkMock.deletePage, deletedPage.id);
-                    // Attachments
-                    sandbox.assert.callCount(sdkMock.createAttachment, 4);
-                    sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.images[0]));
-                    sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.images[0]));
-                    sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.graphs[0].slice(0, -4) + '.png'));
-                    sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.graphs[0].slice(0, -4) + '.png'));
-                    loggerMock.warn.calledWith(`Graph "${createPage.graphs[1]}" for page #${createPage.id} could not be processed`);
+            describe('when mermaid graphs are rendered as confluence plugin', () => {
+                const renderers = ['mermaid-plugin', 'plantuml'];
+                const state = prepareState(renderers);
+                beforeEach(() => {
+                    prepareMocks(state);
+                });
+                it('should sync page changes with attachments', () => {
+                    return assertSync(state);
                 });
             });
         });
     });
+    function assertSync({ root, repo, deletedPage, updatePage, createPage, renderers }) {
+        return sync().then(() => {
+            sandbox.assert.notCalled(loggerMock.fail);
+            sandbox.assert.callOrder(sdkMock.deletePage, sdkMock.updatePage, sdkMock.createPage);
+            sandbox.assert.calledWith(
+                sdkMock.createPage,
+                createPage.title,
+                createPage.html,
+                root,
+                { repo, path: createPage.path, sha: createPage.sha, ...commonMeta }
+            );
+            sandbox.assert.calledWith(
+                sdkMock.updatePage,
+                updatePage.id,
+                updatePage.version + 1,
+                updatePage.title,
+                updatePage.html,
+                root,
+                { repo, path: updatePage.path, sha: 'abc456', ...commonMeta }
+            );
+            sandbox.assert.calledWith(sdkMock.deletePage, deletedPage.id);
+            // Attachments
+
+            sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.images[0]));
+            sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.images[0]));
+            if (renderers[0] === 'kroki') {
+                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.graphs[0].path.slice(0, -4) + '.png'));
+                sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.graphs[0].path.slice(0, -4) + '.png'));
+                sandbox.assert.callCount(sdkMock.createAttachment, 4);
+                sandbox.assert.calledWith(loggerMock.warn, `Graph "${createPage.graphs[1].path}" for page #${createPage.id} could not be processed`);
+            } else {
+                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.graphs[0].path));
+                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.graphs[1].path.slice(0, -5) + '.png'));
+                sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.graphs[0].path));
+                sandbox.assert.callCount(sdkMock.createAttachment, 5);
+                sandbox.assert.notCalled(loggerMock.warn);
+            }
+
+        });
+    }
+    function prepareMocks(state) {
+        const {
+            root, repo, readMe, parentPage, siteName, existingPage, updatePage,
+            createPage, remotePages, localPages, pageRefs
+        } = state;
+        sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
+        sdkMock.findPage.withArgs(siteName).resolves(existingPage);
+        sdkMock.createPage.resolves(createPage.id);
+        sdkMock.updatePage.resolves();
+        sdkMock.deletePage.resolves();
+        sdkMock.getChildPages.withArgs(root).resolves(remotePages);
+        getContextMock.returns({ siteName, repo, readMe, pages: localPages });
+        md2htmlMock.withArgs(localPages[0], pageRefs)
+            .returns({ html: createPage.html, images: createPage.images, graphs: createPage.graphs });
+        md2htmlMock.withArgs(localPages[1], pageRefs)
+            .returns({ html: updatePage.html, images: updatePage.images, graphs: updatePage.graphs });
+        krokiMock.withArgs(updatePage.graphs[0]).resolves(updatePage.graphs[0].path.slice(0, -4) + '.png');
+        krokiMock.withArgs(createPage.graphs[0]).resolves(createPage.graphs[0].path.slice(0, -4) + '.png');
+        krokiMock.withArgs(createPage.graphs[1]).resolves();
+        plantUmlMock.withArgs(createPage.graphs[1]).resolves(createPage.graphs[1].path.slice(0, -5) + '.png');
+    }
 });
+
+function prepareState(renderers = []) {
+    const siteName = 'Site Name';
+    const repo = 'git-repo';
+    const publisher_version = config.version;
+    const existingPage = { id: 1, repo, sha: 'abc123', version: 1, publisher_version };
+    const root = 1;
+    const parentPage = { id: 1 };
+    const readMe = { path: '/path/to/README.md', sha: 'abc123' };
+    const deletedPage = {
+        path: 'docs/deleted.md', sha: 'abc123', id: 100
+    };
+    const updatePage = {
+        title: 'Updated Page', path: 'docs/updated.md', sha: 'abc123', html: '<h1>Updated Page</h1>',
+        images: ['update-page-image.png'],
+        graphs: [{ path: 'update-page-graph.mmd', type: 'mermaid', renderer: renderers[0] }], repo, version: 1, id: 200
+    };
+    const createPage = {
+        title: 'Created Page', path: 'docs/created.md', sha: 'abc456', html: '<h1>Created Page</h1>',
+        images: ['create-page-image.png'],
+        graphs: [
+            { path: 'create-page-graph.mmd', type: 'mermaid', renderer: renderers[0] },
+            { path: 'unprocessable-graph.puml', type: 'plantuml', renderer: renderers[1] }
+        ],
+        repo, id: 300
+    };
+    const remotePages = [deletedPage, updatePage].map(({ path, sha, version, id }) => ({ id, path, sha, version }));
+    const localPages = [createPage, updatePage].map(({ path, title }) => ({ title, path, sha: 'abc456', exists: true }));
+    const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
+    return { siteName, existingPage, root, repo, readMe, parentPage, deletedPage, updatePage, createPage, remotePages, localPages, pageRefs, renderers };
+}
 
