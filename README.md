@@ -132,7 +132,7 @@ Defaults to `yes`.
 *Optional*. Can be one of:
 
 * `'none'`: will not render
-* `'kroki'`: will use [Kroki.io](https://kroki.io) to render to `png`
+* `'kroki'`: will use [Kroki.io](https://kroki.io) to render as `png`
 * `'mermaid-plugin'`: will upload the diagram source and render using
   [Mermaid Diagrams for Confluence](https://marketplace.atlassian.com/apps/1226567/mermaid-diagrams-for-confluence?tab=overview&hosting=cloud) add-on
 
@@ -144,8 +144,8 @@ Defaults to `yes`.
 *Optional*. Can be one of:
 
 * `'none'`: will not render
-* `'kroki'`: will use [Kroki.io](https://kroki.io) to render to `png`
-* `'plantuml'`: will use the diagram source and render using [plantuml.com](https://plantuml.com/)
+* `'kroki'`: will use [Kroki.io](https://kroki.io) to render as `png`
+* `'plantuml'`: will use [plantuml.com](https://plantuml.com/) to render as `png`
 
 > ⚠️ If not explicitly defined, falls back to [`kroki_enabled`](#kroki_enabled-deprecated)
 > option in order to provide backwards compatibility
