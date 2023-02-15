@@ -11,7 +11,9 @@ Atlassian Confluence Cloud wiki.
 * Converts internal links to Confluence links
 * Uploads images as Confluence page attachments
 * Converts fenced code blocks to Confluence code macros
-* Renders *Mermaid* & *PlantUML* graphs to images (via [Kroki.io](https://kroki.io))
+* Renders graphs:
+  * *Mermaid* see [`mermaid_renderer`](#mermaid_renderer) for available options
+  * *PlantUML* see [`plantuml_renderer`](#plantuml_renderer) for available options
 * Add a common [prefix](#confluence_title_prefix) to all page titles
 * Restricts page update to [confluence_user](#confluence_user)
 
@@ -182,10 +184,10 @@ jobs:
           confluence_space: 'The Confluence Space Key'
           confluence_user: ${{ secrets.CONFLUENCE_USER }}
           confluence_token: ${{ secrets.CONFLUENCE_TOKEN }}
-          confluence_parent_page: The title of the page to use as parent # Optional
+          confluence_parent_page: 'The title of the page to use as parent' # Optional
           confluence_title_prefix: 'My Prefix:' # Optional
           confluence_force_update: ${{ github.event.inputs.confluence_force_update }} # Optional
           kroki_enabled: 'no' # Optional
-          mermaid_renderer: none # Optional
-          plantuml_renderer: none # Optional
+          mermaid_renderer: 'none' # Optional
+          plantuml_renderer: 'none' # Optional
 ```

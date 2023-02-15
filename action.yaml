@@ -34,8 +34,8 @@ inputs:
     required: false
     default: 'yes'
   mermaid_renderer:
-    description: ''
+    description: 'The strategy to use for mermaid graphs. Can be one of "none", "kroki" or "mermaid-plugin"'
     required: false
   plantuml_renderer:
-    description: ''
+    description: 'The strategy to use for plantUml graphs. Can be one of "none", "kroki" or "plantuml"'
     required: false
