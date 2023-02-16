@@ -25,9 +25,8 @@ describe('md2html', () => {
         describe('when a markdown file is given', async () => {
             const fixturesPath = 'test/fixtures/markdown';
             const mdFile = path.resolve(fixturesPath, 'full.md');
-            const expectedImages = ['test/fixtures/images/img-1.png'];
-            const mmdFile = 'test/fixtures/markdown/full_graph_1.mmd';
-            const pumlFile = 'test/fixtures/markdown/full_graph_2.puml';
+            const mmdFile = 'test/fixtures/markdown/full_graph_2.mmd';
+            const pumlFile = 'test/fixtures/markdown/full_graph_3.puml';
             const pageRefs = { pages: { 'test/fixtures/markdown/other-page.md': { title: 'Other Page', exists: true } } };
             afterEach(() => {
                 const graphs = [mmdFile, pumlFile];
@@ -45,16 +44,17 @@ describe('md2html', () => {
                     sandbox.replace(config.graphs.plantuml, 'renderer', 'kroki');
                 });
                 it('should render the markdown, save mermaid graph to file, return image and graph references', () => {
-                    const expectedGraphs = [
-                        { path: mmdFile, renderer: 'kroki', type: 'mermaid' },
-                        { path: pumlFile, renderer: 'kroki', type: 'plantuml' }
+                    const expectedAttachments = [
+                        { type: 'image', path: 'test/fixtures/images/img-1.png' },
+                        { type: 'mermaid', path: mmdFile, renderer: 'kroki' },
+                        { type: 'plantuml', path: pumlFile, renderer: 'kroki' }
                     ];
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
-                    const { html, images, graphs } = md2html.render({ path: mdFile }, pageRefs);
+                    const { html, attachments } = md2html.render({ path: mdFile }, pageRefs);
                     html.should.equal(expectedHtml);
-                    images.should.eql(expectedImages);
-                    graphs.should.eql(expectedGraphs);
+                    attachments.should.eql(expectedAttachments);
                     existsSync(mmdFile).should.be.true;
+                    existsSync(pumlFile).should.be.true;
                 });
             });
             describe('when mermaid renderer is mermaid-plugin', () => {
@@ -67,16 +67,17 @@ describe('md2html', () => {
                         sandbox.replace(config.graphs.plantuml, 'renderer', 'plantuml');
                     });
                     it('should render the markdown, save mermaid graph to file, return image and graph references', () => {
-                        const expectedGraphs = [
-                            { path: mmdFile, renderer: 'mermaid-plugin', type: 'mermaid' },
-                            { path: pumlFile, renderer: 'plantuml', type: 'plantuml' }
+                        const expectedAttachments = [
+                            { type: 'image', path: 'test/fixtures/images/img-1.png' },
+                            { type: 'mermaid', path: mmdFile, renderer: 'mermaid-plugin' },
+                            { type: 'plantuml', path: pumlFile, renderer: 'plantuml' }
                         ];
                         const expectedHtml = readFileSync(htmlFile, 'utf8');
-                        const { html, images, graphs } = md2html.render({ path: mdFile }, pageRefs);
+                        const { html, attachments } = md2html.render({ path: mdFile }, pageRefs);
                         html.should.equal(expectedHtml);
-                        images.should.eql(expectedImages);
-                        graphs.should.eql(expectedGraphs);
+                        attachments.should.eql(expectedAttachments);
                         existsSync(mmdFile).should.be.true;
+                        existsSync(pumlFile).should.be.true;
                     });
                 });
             });
@@ -87,27 +88,30 @@ describe('md2html', () => {
                 });
                 const htmlFile = path.resolve(fixturesPath, 'kroki-disabled.html');
                 it('should render the markdown to html and return only image references', () => {
-                    const expectedGraphs = [];
+                    const expectedAttachments = [
+                        { type: 'image', path: 'test/fixtures/images/img-1.png' }
+                    ];
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
-                    const { html, images, graphs } = md2html.render({ path: mdFile }, pageRefs);
+                    const { html, attachments } = md2html.render({ path: mdFile }, pageRefs);
                     html.should.equal(expectedHtml);
-                    images.should.eql(expectedImages);
-                    graphs.should.eql(expectedGraphs);
+                    attachments.should.eql(expectedAttachments);
                     existsSync(mmdFile).should.be.false;
+                    existsSync(pumlFile).should.be.false;
                 });
                 describe('when github url is present', () => {
                     const htmlFile = path.resolve(fixturesPath, 'with-footer.html');
                     it('should include a footer with a link to the source on github', () => {
-                        const expectedGraphs = [];
+                        const expectedAttachments = [
+                            { type: 'image', path: 'test/fixtures/images/img-1.png' }
+                        ];
                         const expectedHtml = readFileSync(htmlFile, 'utf8');
                         const page = {
                             path: mdFile,
                             githubUrl: 'https://github.com/account/repo/blob/branch/docs/full.md'
                         };
-                        const { html, images, graphs } = md2html.render(page, pageRefs);
+                        const { html, attachments } = md2html.render(page, pageRefs);
                         html.should.equal(expectedHtml);
-                        images.should.eql(expectedImages);
-                        graphs.should.eql(expectedGraphs);
+                        attachments.should.eql(expectedAttachments);
                         existsSync(mmdFile).should.be.false;
                     });
                 });

@@ -124,7 +124,7 @@ describe('confluence-syncer', () => {
                         delete meta.exists;
                         describe('when README.md contains no images', () => {
                             beforeEach(() => {
-                                md2htmlMock.withArgs(readMe).returns({ html, images: [], graphs: [] });
+                                md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
                             });
                             it('should create the page using the README.md as content', () => {
@@ -138,7 +138,7 @@ describe('confluence-syncer', () => {
                         describe('when README.md contains images', () => {
                             const id = 1;
                             beforeEach(() => {
-                                md2htmlMock.withArgs(readMe).returns({ html, images: ['image/path/image-file.png'], graphs: [] });
+                                md2htmlMock.withArgs(readMe).returns({ html, attachments: [{ type: 'image', path: 'image/path/image-file.png' }] });
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
                                 sdkMock.createPage.returns(id);
                             });
@@ -192,7 +192,7 @@ describe('confluence-syncer', () => {
                             const readMe = { path: '/path/to/README.md', sha: 'abc123', exists: true };
                             beforeEach(() => {
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                md2htmlMock.withArgs(readMe).returns({ html, images: [], graphs: [] });
+                                md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
                             });
                             describe('when force update is disabled', () => {
                                 beforeEach(() => {
@@ -263,7 +263,7 @@ describe('confluence-syncer', () => {
                             delete meta.exists;
                             beforeEach(() => {
                                 getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                md2htmlMock.withArgs(readMe).returns({ html, images: [], graphs: [] });
+                                md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
                             });
                             it('should update the page using the README.md as content', () => {
                                 return sync().then(() => {
@@ -316,7 +316,7 @@ describe('confluence-syncer', () => {
                 const html = '<h1>Unchanged Page</h1>';
                 beforeEach(() => {
                     sandbox.replace(config.confluence, 'forceUpdate', true);
-                    md2htmlMock.returns({ html, images: [], graphs: [] });
+                    md2htmlMock.returns({ html, attachments: [] });
                     sdkMock.updatePage.resolves();
                 });
                 it('should also update unchanged pages', () => {
@@ -334,7 +334,7 @@ describe('confluence-syncer', () => {
                 const html = '<h1>Unchanged Page</h1>';
                 beforeEach(() => {
                     sandbox.replace(config.confluence, 'forceUpdate', false);
-                    md2htmlMock.returns({ html, images: [], graphs: [] });
+                    md2htmlMock.returns({ html, attachments: [] });
                     sdkMock.updatePage.resolves();
                 });
                 describe('when patch version changes', () => {
@@ -372,7 +372,7 @@ describe('confluence-syncer', () => {
                 const html = '<h1>Unchanged Page</h1>';
                 beforeEach(() => {
                     sandbox.replace(config.confluence, 'forceUpdate', false);
-                    md2htmlMock.returns({ html, images: [], graphs: [] });
+                    md2htmlMock.returns({ html, attachments: [] });
                     sdkMock.updatePage.resolves();
                     remotePages[0].publisher_version = null;
                 });
@@ -434,17 +434,17 @@ describe('confluence-syncer', () => {
             sandbox.assert.calledWith(sdkMock.deletePage, deletedPage.id);
             // Attachments
 
-            sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.images[0]));
-            sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.images[0]));
+            sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.attachments[0].path));
+            sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.attachments[0].path));
             if (renderers[0] === 'kroki') {
-                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.graphs[0].path.slice(0, -4) + '.png'));
-                sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.graphs[0].path.slice(0, -4) + '.png'));
+                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.attachments[1].path.slice(0, -4) + '.png'));
+                sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.attachments[1].path.slice(0, -4) + '.png'));
                 sandbox.assert.callCount(sdkMock.createAttachment, 4);
-                sandbox.assert.calledWith(loggerMock.warn, `Graph "${createPage.graphs[1].path}" for page #${createPage.id} could not be processed`);
+                sandbox.assert.calledWith(loggerMock.warn, `Graph "${createPage.attachments[2].path}" for page #${createPage.id} could not be processed`);
             } else {
-                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.graphs[0].path));
-                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.graphs[1].path.slice(0, -5) + '.png'));
-                sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.graphs[0].path));
+                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.attachments[1].path));
+                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.attachments[2].path.slice(0, -5) + '.png'));
+                sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.attachments[1].path));
                 sandbox.assert.callCount(sdkMock.createAttachment, 5);
                 sandbox.assert.notCalled(loggerMock.warn);
             }
@@ -464,13 +464,13 @@ describe('confluence-syncer', () => {
         sdkMock.getChildPages.withArgs(root).resolves(remotePages);
         getContextMock.returns({ siteName, repo, readMe, pages: localPages });
         md2htmlMock.withArgs(localPages[0], pageRefs)
-            .returns({ html: createPage.html, images: createPage.images, graphs: createPage.graphs });
+            .returns({ html: createPage.html, attachments: createPage.attachments });
         md2htmlMock.withArgs(localPages[1], pageRefs)
-            .returns({ html: updatePage.html, images: updatePage.images, graphs: updatePage.graphs });
-        krokiMock.withArgs(updatePage.graphs[0]).resolves(updatePage.graphs[0].path.slice(0, -4) + '.png');
-        krokiMock.withArgs(createPage.graphs[0]).resolves(createPage.graphs[0].path.slice(0, -4) + '.png');
-        krokiMock.withArgs(createPage.graphs[1]).resolves();
-        plantUmlMock.withArgs(createPage.graphs[1]).resolves(createPage.graphs[1].path.slice(0, -5) + '.png');
+            .returns({ html: updatePage.html, attachments: updatePage.attachments });
+        krokiMock.withArgs(updatePage.attachments[1]).resolves(updatePage.attachments[1].path.slice(0, -4) + '.png');
+        krokiMock.withArgs(createPage.attachments[1]).resolves(createPage.attachments[1].path.slice(0, -4) + '.png');
+        plantUmlMock.withArgs(createPage.attachments[2]).resolves(createPage.attachments[2].path.slice(0, -5) + '.png');
+        krokiMock.withArgs(createPage.attachments[2]).resolves();
     }
 });
 
@@ -487,13 +487,15 @@ function prepareState(renderers = []) {
     };
     const updatePage = {
         title: 'Updated Page', path: 'docs/updated.md', sha: 'abc123', html: '<h1>Updated Page</h1>',
-        images: ['update-page-image.png'],
-        graphs: [{ path: 'update-page-graph.mmd', type: 'mermaid', renderer: renderers[0] }], repo, version: 1, id: 200
+        attachments: [
+            { type: 'image', path: 'update-page-image.png' },
+            { path: 'update-page-graph.mmd', type: 'mermaid', renderer: renderers[0] }
+        ], repo, version: 1, id: 200
     };
     const createPage = {
         title: 'Created Page', path: 'docs/created.md', sha: 'abc456', html: '<h1>Created Page</h1>',
-        images: ['create-page-image.png'],
-        graphs: [
+        attachments: [
+            { type: 'image', path: 'create-page-image.png' },
             { path: 'create-page-graph.mmd', type: 'mermaid', renderer: renderers[0] },
             { path: 'unprocessable-graph.puml', type: 'plantuml', renderer: renderers[1] }
         ],
