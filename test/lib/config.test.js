@@ -66,7 +66,8 @@ function expected(renderer) {
             spaceKey: 'confluence-space-key',
             token: 'api-token',
             user: 'user@tenant.com',
-            forceUpdate: true
+            forceUpdate: true,
+            cleanup: false
         },
         github: {
             refName: process.env.GITHUB_REF_NAME,
