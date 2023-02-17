@@ -115,6 +115,12 @@ confluence space, which requires each page title to be unique.
 those that have not changed. Can be handy when used with the `workflow_dispatch`
 event as shown in the [example usage](#example-usage) below.
 
+### `confluence_cleanup`
+
+*Optional*. When set to `yes` all pages will be deleted from confluence.
+Can be handy when used with the `workflow_dispatch` event as shown in the
+[example usage](#example-usage) below.
+
 ### `kroki_enabled` (*Deprecated*)
 
 *Optional*. When set to `yes` enables rendering of [Mermaid](https://mermaid.js.org/)
@@ -167,7 +173,11 @@ on:
   workflow_dispatch:
     inputs:
       confluence_force_update:
-        description: 'Force update (yes/no)?'
+        description: 'Force update all pages (yes/no)?'
+        required: false
+        default: 'no'
+      confluence_cleanup:
+        description: 'Delete all pages (yes/no)?'
         required: false
         default: 'no'
 
@@ -187,6 +197,7 @@ jobs:
           confluence_parent_page: 'The title of the page to use as parent' # Optional
           confluence_title_prefix: 'My Prefix:' # Optional
           confluence_force_update: ${{ github.event.inputs.confluence_force_update }} # Optional
+          confluence_cleanup: ${{ github.event.inputs.confluence_cleanup }} # Optional
           kroki_enabled: 'no' # Optional
           mermaid_renderer: 'none' # Optional
           plantuml_renderer: 'none' # Optional
