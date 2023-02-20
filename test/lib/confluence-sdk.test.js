@@ -16,7 +16,8 @@ const sdkOpts = {
     host: 'https://tenant.atlassian.net',
     user: 'foo@bar.com',
     token: 'AC0nFlu3nCe@piT0k3N',
-    spaceKey: '~SpaCek3y'
+    spaceKey: '~SpaCek3y',
+    pageLimit: 25
 };
 const requestHeaders = {
     'Authorization':
@@ -359,7 +360,7 @@ describe('confluence-sdk', () => {
         const query = qs.stringify({
             expand: EXPAND_PROPERTIES,
             start: 0,
-            limit: 100
+            limit: sdkOpts.pageLimit
         });
         beforeEach(() => {
             requestMock = nock(sdkOpts.host, { reqheaders: requestHeaders }).get(
@@ -390,25 +391,61 @@ describe('confluence-sdk', () => {
             });
         });
         describe('when there are child pages', () => {
-            it('should return an array with the child pages', () => {
-                const expected = [
-                    {
-                        id: 1821,
-                        parentId: 1453,
-                        path: 'foo/bar/doc.md',
-                        repo: 'https://github.com/Org/Repo',
-                        sha: 'Zm9vL2Jhci9kb2MubWQ=',
-                        title: 'Test',
-                        version: 18,
-                        git_ref: 'git_ref',
-                        git_sha: 'git_sha',
-                        publisher_version: '1.0.0'
-                    }
-                ];
-                requestMock.reply(200, responseFixtures.childPages);
-                return sdk
-                    .getChildPages(parentPageId)
-                    .should.eventually.eql(expected);
+            describe('when all results are returned with the first response', () => {
+                it('should return an array with the child pages', () => {
+                    const expected = [
+                        {
+                            id: 1821,
+                            parentId: 1453,
+                            path: 'foo/bar/doc.md',
+                            repo: 'https://github.com/Org/Repo',
+                            sha: 'Zm9vL2Jhci9kb2MubWQ=',
+                            title: 'Test',
+                            version: 18,
+                            git_ref: 'git_ref',
+                            git_sha: 'git_sha',
+                            publisher_version: '1.0.0'
+                        }
+                    ];
+                    requestMock.reply(200, responseFixtures.childPages);
+                    return sdk
+                        .getChildPages(parentPageId)
+                        .should.eventually.eql(expected);
+                });
+                describe('when results are paged', () => {
+                    it('should traverse paged results an return all child pages', () => {
+                        const expected = [1, 2, 3].map(p => ({
+                            id: p,
+                            parentId: 1453,
+                            path: `foo/bar/page${p}.md`,
+                            repo: 'https://github.com/Org/Repo',
+                            sha: 'Zm9vL2Jhci9kb2MubWQ=',
+                            title: `Page ${p}`,
+                            version: p,
+                            git_ref: 'git_ref',
+                            git_sha: 'git_sha',
+                            publisher_version: '1.0.0'
+                        }));
+
+                        const [second, third] = [1, 2].map(p => {
+                            const query = qs.stringify({
+                                expand: EXPAND_PROPERTIES,
+                                start: p,
+                                limit: sdkOpts.pageLimit
+                            });
+                            return `${basePath}/${parentPageId}/child/page?${query}`;
+                        });
+                        requestMock
+                            .reply(200, responseFixtures.childPages1)
+                            .get(second)
+                            .reply(200, responseFixtures.childPages2)
+                            .get(third)
+                            .reply(200, responseFixtures.childPages3);
+                        return sdk
+                            .getChildPages(parentPageId)
+                            .should.eventually.eql(expected);
+                    });
+                });
             });
         });
     });
