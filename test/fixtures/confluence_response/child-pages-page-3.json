@@ -1,0 +1,43 @@
+{
+  "results": [
+    {
+      "id": "3",
+      "title": "Page 3",
+      "version": {
+        "number": 3
+      },
+      "metadata": {
+        "properties": {
+          "repo": {
+            "key": "repo",
+            "value": "https://github.com/Org/Repo"
+          },
+          "path": {
+            "key": "path",
+            "value": "foo/bar/page3.md"
+          },
+          "sha": {
+            "key": "sha",
+            "value": "Zm9vL2Jhci9kb2MubWQ="
+          },
+          "git_sha": {
+            "key": "git_sha",
+            "value": "git_sha"
+          },
+          "git_ref": {
+            "key": "git_ref",
+            "value": "git_ref"
+          },
+          "publisher_version": {
+            "key": "publisher_version",
+            "value": "1.0.0"
+          }
+        }
+      },
+      "size": 1
+    }
+  ],
+  "_links": {
+    "context": "/wiki"
+  }
+}
