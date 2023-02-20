@@ -67,7 +67,8 @@ function expected(renderer) {
             token: 'api-token',
             user: 'user@tenant.com',
             forceUpdate: true,
-            cleanup: false
+            cleanup: false,
+            pageLimit: 25
         },
         github: {
             refName: process.env.GITHUB_REF_NAME,
