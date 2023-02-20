@@ -21,6 +21,7 @@
   "dependencies": {
     "@actions/core": "^1.10.0",
     "axios": "^1.1.2",
+    "axios-retry": "^3.4.0",
     "form-data": "^4.0.0",
     "markdown-it": "^13.0.1",
     "plantuml-encoder": "^1.4.0",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@vercel/ncc": "^0.36.0",
+    "axios-mock-adapter": "^1.21.2",
     "c8": "^7.12.0",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",

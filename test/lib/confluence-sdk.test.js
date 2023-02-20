@@ -8,6 +8,7 @@ import { RequestError } from '../../lib/confluence-sdk-errors.js';
 import * as createPageFixtures from '../fixtures/sdk_request/create_page/index.js';
 import * as updatePageFixtures from '../fixtures/sdk_request/update_page/index.js';
 import * as responseFixtures from '../fixtures/confluence_response/index.js';
+import retryPolicyTest from './retry-policy.test.js';
 
 const sandbox = sinon.createSandbox();
 const basePath = '/wiki/rest/api/content';
@@ -18,10 +19,10 @@ const sdkOpts = {
     spaceKey: '~SpaCek3y'
 };
 const requestHeaders = {
-    authorization:
+    'Authorization':
         'Basic ' +
         Buffer.from(`${sdkOpts.user}:${sdkOpts.token}`).toString('base64'),
-    accept: 'application/json'
+    'Accept': 'application/json'
 };
 const EXPAND_PROPERTIES = [
     'version',
@@ -42,6 +43,9 @@ describe('confluence-sdk', () => {
     afterEach(() => {
         sandbox.restore();
     });
+
+    retryPolicyTest(new ConfluenceSdk(sdkOpts).api);
+
     describe('findPage', () => {
         const title = 'A Page Title';
         const query = qs.stringify({
@@ -492,8 +496,8 @@ describe('confluence-sdk', () => {
         describe('when file not exists', () => {
             it('should throw RequestError', () => {
                 const notExistentFile = file + '.not_exists';
-                const error = `ENOENT: no such file or directory, open '${notExistentFile}'`;
-                requestMock.reply(404);
+                const error = `Attachment '${notExistentFile}' not exists`;
+                requestMock.reply(200);
                 return sdk.createAttachment(pageId, notExistentFile).should.be.rejectedWith(error);
             });
         });
