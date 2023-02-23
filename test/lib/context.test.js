@@ -24,7 +24,9 @@ describe('context', () => {
                 });
                 describe('when README.md not exists', () => {
                     it('should parse mkdocs.yml file and return a context object without readMe', () => {
+                        const warnLog = sandbox.stub(logger, 'warn');
                         context.getContext('./test/fixtures/samples/no_readme').should.be.eql(noReadme);
+                        sandbox.assert.calledWith(warnLog, 'Page "Fixture Site Name" not found at "test/fixtures/samples/no_readme/README.md"');
                     });
                 });
                 describe('when README.md exists', () => {
@@ -35,7 +37,10 @@ describe('context', () => {
                 });
                 describe('when mkdocs.yml has unsafe paths', () => {
                     it('should mark unsafe files as not existent', () => {
+                        const warnLog = sandbox.stub(logger, 'warn');
                         context.getContext('./test/fixtures/samples/unsafe_paths').should.be.eql(withUnsafeFiles);
+                        sandbox.assert.calledWith(warnLog, 'Page "Getting started" not found at "test/foo"');
+                        sandbox.assert.calledWith(warnLog, 'Page "Fixture Site Name" not found at "test/fixtures/samples/unsafe_paths/README.md"');
                     });
                 });
                 describe('when debug is enabled', () => {

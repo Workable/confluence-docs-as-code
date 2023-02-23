@@ -118,7 +118,7 @@ describe('confluence-syncer', () => {
                         });
                         describe('when README.md exists', () => {
                             const html = '<h1>From README.md</h1>';
-                            const readMe = { path: '/path/to/README.md', sha: 'abc123', exists: true };
+                            const readMe = { path: '/path/to/README.md', sha: 'abc123' };
                             const meta = { repo, ...readMe, ...commonMeta };
                             delete meta.exists;
                             describe('when README.md contains no images', () => {
@@ -190,7 +190,7 @@ describe('confluence-syncer', () => {
                         describe('when README.md exists', () => {
                             const html = '<h1>From README.md</h1>';
                             describe('when home page sha matches', () => {
-                                const readMe = { path: '/path/to/README.md', sha: 'abc123', exists: true };
+                                const readMe = { path: '/path/to/README.md', sha: 'abc123' };
                                 beforeEach(() => {
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
                                     md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
@@ -293,12 +293,13 @@ describe('confluence-syncer', () => {
             describe('when page content has not changed', () => {
                 const [path, sha] = ['docs/unchanged.md', 'abc345'];
                 const remotePages = [{ id: 100, path, sha, version: 1, publisher_version }];
-                const localPages = [{ title: 'Unchanged', path, sha, exists: true }];
+                const localPages = [{ title: 'Unchanged', path, sha }];
                 beforeEach(() => {
                     sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
                     sdkMock.findPage.withArgs(siteName).resolves(existingPage);
                     getContextMock.returns({ siteName, repo, readMe, pages: localPages });
                     sdkMock.getChildPages.withArgs(root).resolves(remotePages);
+                    md2htmlMock.withArgs(readMe).returns({ html: '', attachments: [] });
                 });
                 describe('when force update is disabled', () => {
                     beforeEach(() => {
@@ -464,6 +465,7 @@ describe('confluence-syncer', () => {
             sdkMock.deletePage.resolves();
             sdkMock.getChildPages.withArgs(root).resolves(remotePages);
             getContextMock.returns({ siteName, repo, readMe, pages: localPages });
+            md2htmlMock.withArgs(readMe).returns({ html: '', attachments: [] });
             md2htmlMock.withArgs(localPages[0], pageRefs)
                 .returns({ html: createPage.html, attachments: createPage.attachments });
             md2htmlMock.withArgs(localPages[1], pageRefs)
@@ -545,7 +547,7 @@ function prepareState(renderers = []) {
         repo, id: 300
     };
     const remotePages = [deletedPage, updatePage].map(({ path, sha, version, id }) => ({ id, path, sha, version }));
-    const localPages = [createPage, updatePage].map(({ path, title }) => ({ title, path, sha: 'abc456', exists: true }));
+    const localPages = [createPage, updatePage].map(({ path, title }) => ({ title, path, sha: 'abc456' }));
     const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
     return { siteName, existingPage, root, repo, readMe, parentPage, deletedPage, updatePage, createPage, remotePages, localPages, pageRefs, renderers };
 }
