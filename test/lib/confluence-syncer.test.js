@@ -120,7 +120,6 @@ describe('confluence-syncer', () => {
                             const html = '<h1>From README.md</h1>';
                             const readMe = { path: '/path/to/README.md', sha: 'abc123' };
                             const meta = { repo, ...readMe, ...commonMeta };
-                            delete meta.exists;
                             describe('when README.md contains no images', () => {
                                 beforeEach(() => {
                                     md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
@@ -211,7 +210,6 @@ describe('confluence-syncer', () => {
 
                                 describe('when force update is enabled', () => {
                                     const meta = { repo, ...readMe, ...commonMeta };
-                                    delete meta.exists;
                                     beforeEach(() => {
                                         sandbox.replace(config.confluence, 'forceUpdate', true);
                                         getContextMock.returns({ siteName, repo, pages: [], readMe });
@@ -234,7 +232,6 @@ describe('confluence-syncer', () => {
                                 });
                                 describe('when publisher version changes', () => {
                                     const meta = { repo, ...readMe, ...commonMeta };
-                                    delete meta.exists;
                                     beforeEach(() => {
                                         sandbox.replace(config.confluence, 'forceUpdate', false);
                                         getContextMock.returns({ siteName, repo, pages: [], readMe });
@@ -259,9 +256,7 @@ describe('confluence-syncer', () => {
                             });
                             describe('when home page sha does not match', () => {
                                 const { readMe, existingPage } = prepareState();
-                                readMe.exists = true;
                                 const meta = { repo, ...readMe, ...commonMeta };
-                                delete meta.exists;
                                 beforeEach(() => {
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
                                     md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
@@ -464,7 +459,7 @@ describe('confluence-syncer', () => {
             sdkMock.updatePage.resolves();
             sdkMock.deletePage.resolves();
             sdkMock.getChildPages.withArgs(root).resolves(remotePages);
-            getContextMock.returns({ siteName, repo, readMe, pages: localPages });
+            getContextMock.returns({ siteName, repo, readMe, pages: localPages, pageRefs });
             md2htmlMock.withArgs(readMe).returns({ html: '', attachments: [] });
             md2htmlMock.withArgs(localPages[0], pageRefs)
                 .returns({ html: createPage.html, attachments: createPage.attachments });
