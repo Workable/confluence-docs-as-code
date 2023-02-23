@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import md2html from '../../lib/md2html.js';
 import config from '../../lib/config.js';
+import { Image, Graph } from '../../lib/models/index.js';
 
 const sandbox = sinon.createSandbox();
 
@@ -25,6 +26,7 @@ describe('md2html', () => {
         describe('when a markdown file is given', async () => {
             const fixturesPath = 'test/fixtures/markdown';
             const mdFile = path.resolve(fixturesPath, 'full.md');
+            const imageFile = 'test/fixtures/images/img-1.png';
             const mmdFile = 'test/fixtures/markdown/full_graph_2.mmd';
             const pumlFile = 'test/fixtures/markdown/full_graph_3.puml';
             const pageRefs = { pages: { 'test/fixtures/markdown/other-page.md': { title: 'Other Page', exists: true } } };
@@ -45,9 +47,9 @@ describe('md2html', () => {
                 });
                 it('should render the markdown, save mermaid graph to file, return image and graph references', () => {
                     const expectedAttachments = [
-                        { type: 'image', path: 'test/fixtures/images/img-1.png' },
-                        { type: 'mermaid', path: mmdFile, renderer: 'kroki' },
-                        { type: 'plantuml', path: pumlFile, renderer: 'kroki' }
+                        new Image(imageFile, 'img1'),
+                        new Graph(mmdFile, 'mermaid', 'kroki', 'graph_2'),
+                        new Graph(pumlFile, 'plantuml', 'kroki', 'graph_3'),
                     ];
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
                     const { html, attachments } = md2html.render({ path: mdFile }, pageRefs);
@@ -68,9 +70,9 @@ describe('md2html', () => {
                     });
                     it('should render the markdown, save mermaid graph to file, return image and graph references', () => {
                         const expectedAttachments = [
-                            { type: 'image', path: 'test/fixtures/images/img-1.png' },
-                            { type: 'mermaid', path: mmdFile, renderer: 'mermaid-plugin' },
-                            { type: 'plantuml', path: pumlFile, renderer: 'plantuml' }
+                            new Image(imageFile, 'img1'),
+                            new Graph(mmdFile, 'mermaid', 'mermaid-plugin', 'graph_2'),
+                            new Graph(pumlFile, 'plantuml', 'plantuml', 'graph_3'),
                         ];
                         const expectedHtml = readFileSync(htmlFile, 'utf8');
                         const { html, attachments } = md2html.render({ path: mdFile }, pageRefs);
@@ -89,7 +91,7 @@ describe('md2html', () => {
                 const htmlFile = path.resolve(fixturesPath, 'kroki-disabled.html');
                 it('should render the markdown to html and return only image references', () => {
                     const expectedAttachments = [
-                        { type: 'image', path: 'test/fixtures/images/img-1.png' }
+                        new Image(imageFile, 'img1')
                     ];
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
                     const { html, attachments } = md2html.render({ path: mdFile }, pageRefs);
@@ -102,7 +104,7 @@ describe('md2html', () => {
                     const htmlFile = path.resolve(fixturesPath, 'with-footer.html');
                     it('should include a footer with a link to the source on github', () => {
                         const expectedAttachments = [
-                            { type: 'image', path: 'test/fixtures/images/img-1.png' }
+                            new Image(imageFile, 'img1')
                         ];
                         const expectedHtml = readFileSync(htmlFile, 'utf8');
                         const page = {

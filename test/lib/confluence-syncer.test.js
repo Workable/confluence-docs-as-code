@@ -9,6 +9,7 @@ import context from '../../lib/context.js';
 import config from '../../lib/config.js';
 import md2html from '../../lib/md2html.js';
 import util from '../../lib/util.js';
+import { Image, Graph } from '../../lib/models/index.js';
 
 const sandbox = sinon.createSandbox();
 
@@ -136,7 +137,9 @@ describe('confluence-syncer', () => {
                             describe('when README.md contains images', () => {
                                 const id = 1;
                                 beforeEach(() => {
-                                    md2htmlMock.withArgs(readMe).returns({ html, attachments: [{ type: 'image', path: 'image/path/image-file.png' }] });
+                                    md2htmlMock.withArgs(readMe).returns({
+                                        html, attachments: [new Image('image/path/image-file.png')]
+                                    });
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
                                     sdkMock.createPage.returns(id);
                                 });
@@ -528,16 +531,16 @@ function prepareState(renderers = []) {
     const updatePage = {
         title: 'Updated Page', path: 'docs/updated.md', sha: 'abc123', html: '<h1>Updated Page</h1>',
         attachments: [
-            { type: 'image', path: 'update-page-image.png' },
-            { path: 'update-page-graph.mmd', type: 'mermaid', renderer: renderers[0] }
+            new Image('create-page-image.png'),
+            new Graph('update-page-graph.mmd', 'mermaid', renderers[0])
         ], repo, version: 1, id: 200
     };
     const createPage = {
         title: 'Created Page', path: 'docs/created.md', sha: 'abc456', html: '<h1>Created Page</h1>',
         attachments: [
-            { type: 'image', path: 'create-page-image.png' },
-            { path: 'create-page-graph.mmd', type: 'mermaid', renderer: renderers[0] },
-            { path: 'unprocessable-graph.puml', type: 'plantuml', renderer: renderers[1] }
+            new Image('create-page-image.png'),
+            new Graph('create-page-graph.mmd', 'mermaid', renderers[0]),
+            new Graph('unprocessable-graph.puml', 'plantuml', renderers[1])
         ],
         repo, id: 300
     };
