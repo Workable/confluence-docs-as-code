@@ -1,6 +1,9 @@
 {
   "siteName": "Fixture Site Name",
   "repo": "https://github.com/fixture-account/fixture-repo",
+  "pageRefs": {
+    "test/fixtures/samples/no_readme/docs/getting-started.md": "Getting started"
+  },
   "pages": [
     {
       "title": "Getting started",

@@ -33,6 +33,14 @@
       "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/how-to.md"
     }
   ],
+  "pageRefs": {
+    "test/fixtures/samples/simple/README.md": "Fixture Site Name",
+    "test/fixtures/samples/simple/docs/getting-started.md": "Getting started",
+    "test/fixtures/samples/simple/docs/architecture.md": "Architecture",
+    "test/fixtures/samples/simple/docs/references/database.md": "Database",
+    "test/fixtures/samples/simple/docs/references/api.md": "API",
+    "test/fixtures/samples/simple/docs/how-to.md": "How-To"
+  },
   "readMe": {
     "title": "Fixture Site Name",
     "path": "test/fixtures/samples/simple/README.md",

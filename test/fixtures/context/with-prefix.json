@@ -1,6 +1,14 @@
 {
   "siteName": "Fixture Site Name",
   "repo": "https://github.com/fixture-account/fixture-repo",
+  "pageRefs": {
+    "test/fixtures/samples/simple/docs/getting-started.md": "PFX: Getting started",
+    "test/fixtures/samples/simple/docs/architecture.md": "PFX: Architecture",
+    "test/fixtures/samples/simple/docs/references/database.md": "PFX: Database",
+    "test/fixtures/samples/simple/docs/references/api.md": "PFX: API",
+    "test/fixtures/samples/simple/docs/how-to.md": "PFX: How-To",
+    "test/fixtures/samples/simple/README.md": "Fixture Site Name"
+  },
   "pages": [
     {
       "title": "PFX: Getting started",
