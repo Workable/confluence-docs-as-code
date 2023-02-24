@@ -1,4 +1,4 @@
-import Graph from '../../lib/models/graph.js';
+import Graph from '../../../lib/models/graph.js';
 
 describe('models/graph', () => {
     const file = 'file.mmd';

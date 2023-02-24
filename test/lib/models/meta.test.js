@@ -1,5 +1,5 @@
-import config from '../../lib/config.js';
-import Meta from '../../lib/models/meta.js';
+import config from '../../../lib/config.js';
+import Meta from '../../../lib/models/meta.js';
 
 describe('models/meta', () => {
     const [repo, path, sha] = ['repo', 'path', 'sha'];
@@ -8,9 +8,9 @@ describe('models/meta', () => {
         describe('with all properties', () => {
             it('should create a meta instance with all properties', () => {
                 const expected = {
-                    repo, path, sha, publisher_version, git_ref, git_sha
+                    repo, path, sha, publisher_version: 'my-version', git_ref: 'my-git-ref', git_sha: 'my-git-sha'
                 };
-                const instance = new Meta(repo, path, sha);
+                const instance = new Meta(repo, path, sha, 'my-git-ref', 'my-git-sha', 'my-version');
                 instance.should.eql(expected);
             });
         });
