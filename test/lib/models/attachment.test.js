@@ -1,4 +1,4 @@
-import Attachment from '../../lib/models/attachment.js';
+import Attachment from '../../../lib/models/attachment.js';
 import { expect } from 'chai';
 
 describe('models/attachment', () => {

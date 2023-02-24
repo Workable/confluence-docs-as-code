@@ -1,4 +1,4 @@
-import Image from '../../lib/models/image.js';
+import Image from '../../../lib/models/image.js';
 
 describe('models/image', () => {
     const file = 'file.png';
