@@ -50,4 +50,10 @@ describe('models/meta', () => {
             });
         });
     });
+    describe('githubUrl', () => {
+        it('should construct and return the github url from the metadata', () => {
+            const expected = `${repo}/blob/${git_ref}/${path}`;
+            new Meta(repo, path, sha).githubUrl.should.equal(expected);
+        });
+    });
 });
