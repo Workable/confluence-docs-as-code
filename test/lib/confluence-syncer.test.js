@@ -114,8 +114,8 @@ describe('confluence-syncer', () => {
                         });
                         describe('when README.md exists', () => {
                             const html = '<h1>From README.md</h1>';
-                            const readMe = { path: '/path/to/README.md', sha: 'abc123' };
-                            const meta = new Meta(repo, readMe.path, readMe.sha);
+                            const meta = new Meta(repo, '/path/to/README.md', 'abc123');
+                            const readMe = { meta };
                             describe('when README.md contains no images', () => {
                                 beforeEach(() => {
                                     md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
@@ -186,7 +186,7 @@ describe('confluence-syncer', () => {
                         describe('when README.md exists', () => {
                             const html = '<h1>From README.md</h1>';
                             describe('when home page sha matches', () => {
-                                const readMe = { path: '/path/to/README.md', sha: 'abc123' };
+                                const readMe = { meta: new Meta(repo, '/path/to/README.md', 'abc123') };
                                 beforeEach(() => {
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
                                     md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
@@ -205,7 +205,6 @@ describe('confluence-syncer', () => {
                                     });
                                 });
                                 describe('when force update is enabled', () => {
-                                    const meta = new Meta(repo, readMe.path, readMe.sha);
                                     beforeEach(() => {
                                         sandbox.replace(config.confluence, 'forceUpdate', true);
                                         getContextMock.returns({ siteName, repo, pages: [], readMe });
@@ -221,17 +220,16 @@ describe('confluence-syncer', () => {
                                                 siteName,
                                                 html,
                                                 parentPage.id,
-                                                meta
+                                                existingPage.meta
                                             );
                                         });
                                     });
                                 });
                                 describe('when publisher version changes', () => {
-                                    const meta = new Meta(repo, readMe.path, readMe.sha);
                                     beforeEach(() => {
                                         sandbox.replace(config.confluence, 'forceUpdate', false);
                                         getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                        existingPage.meta.publisher_version = `${majorVer + 1}.0.0`;
+                                        existingPage.meta.publisher_version = '0.1.1';
                                     });
                                     it('should update the page using the README.md as content', () => {
                                         return sync().then(() => {
@@ -244,7 +242,7 @@ describe('confluence-syncer', () => {
                                                 siteName,
                                                 html,
                                                 parentPage.id,
-                                                meta
+                                                readMe.meta
                                             );
                                         });
                                     });
@@ -252,7 +250,6 @@ describe('confluence-syncer', () => {
                             });
                             describe('when home page sha does not match', () => {
                                 const { readMe, existingPage } = prepareState();
-                                const meta = new Meta(repo, readMe.path, readMe.sha);
                                 beforeEach(() => {
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
                                     md2htmlMock.withArgs(readMe).returns({ html, attachments: [] });
@@ -268,7 +265,7 @@ describe('confluence-syncer', () => {
                                             siteName,
                                             html,
                                             parentPage.id,
-                                            meta
+                                            readMe.meta
                                         );
                                     });
                                 });
@@ -279,12 +276,11 @@ describe('confluence-syncer', () => {
             });
         });
         describe('sync child pages', () => {
-            const publisher_version = config.version;
             const { root, repo, parentPage, siteName, existingPage, readMe } = prepareState();
             describe('when page content has not changed', () => {
                 const [path, sha] = ['docs/unchanged.md', 'abc345'];
-                const remotePages = [{ id: 100, version: 1, meta: { path, sha, publisher_version } }];
-                const localPages = [{ title: 'Unchanged', path, sha }];
+                const remotePages = [{ id: 100, version: 1, meta: new Meta(repo, path, sha) }];
+                const localPages = [{ title: 'Unchanged', path, sha, meta: new Meta(repo, path, sha) }];
                 beforeEach(() => {
                     sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
                     sdkMock.findPage.withArgs(siteName).resolves(existingPage);
@@ -401,7 +397,7 @@ describe('confluence-syncer', () => {
                 });
             });
         });
-        function assertSync({ root, repo, deletedPage, updatePage, createPage, renderers }) {
+        function assertSync({ root, deletedPage, updatePage, createPage, renderers }) {
             return sync().then(() => {
                 sandbox.assert.notCalled(loggerMock.fail);
                 sandbox.assert.callOrder(sdkMock.deletePage, sdkMock.updatePage, sdkMock.createPage);
@@ -410,7 +406,7 @@ describe('confluence-syncer', () => {
                     createPage.title,
                     createPage.html,
                     root,
-                    new Meta(repo, createPage.path, createPage.sha)
+                    createPage.meta
                 );
                 sandbox.assert.calledWith(
                     sdkMock.updatePage,
@@ -419,7 +415,7 @@ describe('confluence-syncer', () => {
                     updatePage.title,
                     updatePage.html,
                     root,
-                    new Meta(repo, updatePage.path, 'abc456')
+                    updatePage.meta
                 );
                 sandbox.assert.calledWith(sdkMock.deletePage, deletedPage.id);
                 // Attachments
@@ -510,23 +506,27 @@ describe('confluence-syncer', () => {
 function prepareState(renderers = []) {
     const siteName = 'Site Name';
     const repo = 'git-repo';
-    const publisher_version = config.version;
-    const existingPage = { id: 1, version: 1, meta: { repo, sha: 'abc123', publisher_version } };
+    const existingPage = { id: 1, version: 1, meta: new Meta(repo, '/path/to/README.md', 'abc123') };
     const root = 1;
     const parentPage = { id: 1 };
-    const readMe = { path: '/path/to/README.md', sha: 'abc123' };
+    const readMe = { meta: new Meta(repo, '/path/to/README.md', 'abc123') };
     const deletedPage = {
-        path: 'docs/deleted.md', sha: 'abc123', id: 100
+        id: 100,
+        meta: new Meta(repo, 'docs/deleted.md', 'abc123'),
     };
     const updatePage = {
-        title: 'Updated Page', path: 'docs/updated.md', sha: 'abc123', html: '<h1>Updated Page</h1>',
+        title: 'Updated Page',
+        html: '<h1>Updated Page</h1>',
+        meta: new Meta(repo, 'docs/updated.md', 'abc123'),
         attachments: [
             new Image('create-page-image.png'),
             new Graph('update-page-graph.mmd', 'mermaid', renderers[0])
         ], repo, version: 1, id: 200
     };
     const createPage = {
-        title: 'Created Page', path: 'docs/created.md', sha: 'abc456', html: '<h1>Created Page</h1>',
+        title: 'Created Page',
+        html: '<h1>Created Page</h1>',
+        meta: new Meta(repo, 'docs/created.md', 'abc456'),
         attachments: [
             new Image('create-page-image.png'),
             new Graph('create-page-graph.mmd', 'mermaid', renderers[0]),
@@ -534,8 +534,8 @@ function prepareState(renderers = []) {
         ],
         repo, id: 300
     };
-    const remotePages = [deletedPage, updatePage].map(({ path, sha, version, id }) => ({ id, version, meta: { path, sha } }));
-    const localPages = [createPage, updatePage].map(({ path, title }) => ({ title, path, sha: 'abc456' }));
+    const remotePages = [deletedPage, updatePage].map(({ version, id, meta }) => ({ id, version, meta }));
+    const localPages = [createPage, updatePage].map(({ title, meta }) => ({ title, meta }));
     const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
     return { siteName, existingPage, root, repo, readMe, parentPage, deletedPage, updatePage, createPage, remotePages, localPages, pageRefs, renderers };
 }

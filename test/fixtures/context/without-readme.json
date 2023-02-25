@@ -8,8 +8,14 @@
     {
       "title": "Getting started",
       "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/no_readme/docs/getting-started.md",
-      "path": "test/fixtures/samples/no_readme/docs/getting-started.md",
-      "sha": "cce0ac41675f6c5dc82b5fa18971b1f0ed3a7cbd01594de3f7882d5bf6fbabfe"
+      "meta": {
+        "repo": "https://github.com/fixture-account/fixture-repo",
+        "path": "test/fixtures/samples/no_readme/docs/getting-started.md",
+        "sha": "cce0ac41675f6c5dc82b5fa18971b1f0ed3a7cbd01594de3f7882d5bf6fbabfe",
+        "publisher_version": "1.0.0",
+        "git_ref": "branch-name",
+        "git_sha": "git-hub-sha"
+      }
     }
   ]
 }
