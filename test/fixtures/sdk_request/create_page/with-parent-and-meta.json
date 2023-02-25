@@ -21,9 +21,21 @@
         "key": "editor",
         "value": "v2"
       },
-      "metaKey": {
-        "key": "metaKey",
-        "value": "metaValue"
+      "repo": {
+        "key": "repo",
+        "value": "repo"
+      },
+      "git_ref": {
+        "key": "git_ref",
+        "value": "branch-name"
+      },
+      "git_sha": {
+        "key": "git_sha",
+        "value": "git-hub-sha"
+      },
+      "publisher_version": {
+        "key": "publisher_version",
+        "value": "1.0.0"
       }
     }
   },
