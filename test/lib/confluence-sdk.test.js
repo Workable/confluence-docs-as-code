@@ -9,6 +9,8 @@ import * as createPageFixtures from '../fixtures/sdk_request/create_page/index.j
 import * as updatePageFixtures from '../fixtures/sdk_request/update_page/index.js';
 import * as responseFixtures from '../fixtures/confluence_response/index.js';
 import retryPolicyTest from './retry-policy.test.js';
+import Meta from '../../lib/models/meta.js';
+import config from '../../lib/config.js';
 
 const sandbox = sinon.createSandbox();
 const basePath = '/wiki/rest/api/content';
@@ -40,6 +42,7 @@ describe('confluence-sdk', () => {
     beforeEach(() => {
         sdk = new ConfluenceSdk(sdkOpts);
         sandbox.stub(logger, 'error');
+        sandbox.replace(config, 'version', '1.0.0');
     });
     afterEach(() => {
         sandbox.restore();
@@ -65,14 +68,16 @@ describe('confluence-sdk', () => {
             it('should return the id of the page', () => {
                 const expected = {
                     id: 1821,
-                    path: 'foo/bar/doc.md',
-                    repo: 'https://github.com/Org/Repo',
-                    sha: 'Zm9vL2Jhci9kb2MubWQ=',
                     title: 'Test',
                     version: 18,
-                    git_ref: 'git_ref',
-                    git_sha: 'git_sha',
-                    publisher_version: '1.0.0'
+                    meta: {
+                        path: 'foo/bar/doc.md',
+                        repo: 'https://github.com/Org/Repo',
+                        sha: 'Zm9vL2Jhci9kb2MubWQ=',
+                        git_ref: 'git_ref',
+                        git_sha: 'git_sha',
+                        publisher_version: '1.0.0'
+                    }
                 };
                 requestMock.reply(200, responseFixtures.childPages);
                 return sdk.findPage(title).should.eventually.eql(expected);
@@ -168,7 +173,7 @@ describe('confluence-sdk', () => {
                 it('should return the id of the new page', () => {
                     const pageId = 1821;
                     const parentPage = 1453;
-                    const meta = { metaKey: 'metaValue' };
+                    const meta = new Meta('repo');
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .post(basePath, createPageFixtures.withParentAndMeta)
                         .reply(200, { id: pageId });
@@ -177,11 +182,11 @@ describe('confluence-sdk', () => {
                         .should.eventually.equal(pageId);
                 });
             });
-            describe('when meta is not an object', () => {
+            describe('when meta is not an instance of Meta', () => {
                 it('should throw Error', () => {
                     return sdk
                         .createPage(title, content, 1234, 'foo')
-                        .should.be.rejectedWith('meta should be an object');
+                        .should.be.rejectedWith('meta is not an instance of Meta class');
                 });
             });
             describe('when parent is not an number', () => {
@@ -254,11 +259,11 @@ describe('confluence-sdk', () => {
             });
         });
 
-        describe('when meta is not an object', () => {
+        describe('when meta is not an instance of Meta', () => {
             it('should throw Error', () => {
                 return sdk
                     .updatePage(pageId, 11, 'Title', 'Html', 1453, 777)
-                    .should.be.rejectedWith('meta should be an object');
+                    .should.be.rejectedWith('meta is not an instance of Meta class');
             });
         });
 
@@ -301,7 +306,7 @@ describe('confluence-sdk', () => {
             describe('with parent page and meta', () => {
                 it('should return void', () => {
                     const parentPageId = 1566;
-                    const meta = { metaKey: 'metaValue' };
+                    const meta = new Meta('repo');
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .put(
                             `${basePath}/${pageId}`,
@@ -397,14 +402,16 @@ describe('confluence-sdk', () => {
                         {
                             id: 1821,
                             parentId: 1453,
-                            path: 'foo/bar/doc.md',
-                            repo: 'https://github.com/Org/Repo',
-                            sha: 'Zm9vL2Jhci9kb2MubWQ=',
-                            title: 'Test',
                             version: 18,
-                            git_ref: 'git_ref',
-                            git_sha: 'git_sha',
-                            publisher_version: '1.0.0'
+                            title: 'Test',
+                            meta: {
+                                path: 'foo/bar/doc.md',
+                                repo: 'https://github.com/Org/Repo',
+                                sha: 'Zm9vL2Jhci9kb2MubWQ=',
+                                git_ref: 'git_ref',
+                                git_sha: 'git_sha',
+                                publisher_version: '1.0.0'
+                            }
                         }
                     ];
                     requestMock.reply(200, responseFixtures.childPages);
@@ -417,14 +424,16 @@ describe('confluence-sdk', () => {
                         const expected = [1, 2, 3].map(p => ({
                             id: p,
                             parentId: 1453,
-                            path: `foo/bar/page${p}.md`,
-                            repo: 'https://github.com/Org/Repo',
-                            sha: 'Zm9vL2Jhci9kb2MubWQ=',
                             title: `Page ${p}`,
                             version: p,
-                            git_ref: 'git_ref',
-                            git_sha: 'git_sha',
-                            publisher_version: '1.0.0'
+                            meta: {
+                                path: `foo/bar/page${p}.md`,
+                                repo: 'https://github.com/Org/Repo',
+                                sha: 'Zm9vL2Jhci9kb2MubWQ=',
+                                git_ref: 'git_ref',
+                                git_sha: 'git_sha',
+                                publisher_version: '1.0.0'
+                            }
                         }));
 
                         const [second, third] = [1, 2].map(p => {
