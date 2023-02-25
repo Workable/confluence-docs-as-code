@@ -58,5 +58,20 @@ describe('util', () => {
             };
             util.keyBy(input, 'key').should.eql(expected);
         });
+        describe('when attribute is an object path', () => {
+            it('should transform an array of objects to an object keyed by an attribute', () => {
+                const input = [
+                    { key1: { key2: 'k1', value: 'v1' } },
+                    { key1: { key2: 'k2', value: 'v2' } },
+                    { key1: { key2: 'k3', value: 'v3' } }
+                ];
+                const expected = {
+                    k1: { key1: { key2: 'k1', value: 'v1' } },
+                    k2: { key1: { key2: 'k2', value: 'v2' } },
+                    k3: { key1: { key2: 'k3', value: 'v3' } }
+                };
+                util.keyBy(input, 'key1.key2').should.eql(expected);
+            });
+        });
     });
 });
