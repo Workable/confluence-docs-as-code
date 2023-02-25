@@ -7,7 +7,6 @@
   "pages": [
     {
       "title": "Getting started",
-      "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/no_readme/docs/getting-started.md",
       "meta": {
         "repo": "https://github.com/fixture-account/fixture-repo",
         "path": "test/fixtures/samples/no_readme/docs/getting-started.md",
