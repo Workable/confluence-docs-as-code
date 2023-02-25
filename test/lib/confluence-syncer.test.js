@@ -9,7 +9,7 @@ import context from '../../lib/context.js';
 import config from '../../lib/config.js';
 import md2html from '../../lib/md2html.js';
 import util from '../../lib/util.js';
-import { Image, Graph, Meta } from '../../lib/models/index.js';
+import { Image, Graph, Meta, Page } from '../../lib/models/index.js';
 
 const sandbox = sinon.createSandbox();
 
@@ -279,7 +279,7 @@ describe('confluence-syncer', () => {
             const { root, repo, parentPage, siteName, existingPage, readMe } = prepareState();
             describe('when page content has not changed', () => {
                 const [path, sha] = ['docs/unchanged.md', 'abc345'];
-                const localPages = [{ title: 'Unchanged', path, sha, meta: new Meta(repo, path, sha) }];
+                const localPages = [new Page('Unchanged', new Meta(repo, path, sha))];
                 let remotePages;
                 beforeEach(() => {
                     remotePages = new Map().set(path, { id: 100, version: 1, meta: new Meta(repo, path, sha) });
@@ -539,7 +539,7 @@ function prepareState(renderers = []) {
         (map, { version, id, meta }) => { map.set(meta.path, { id, version, meta }); return map; },
         new Map()
     );
-    const localPages = [createPage, updatePage].map(({ title, meta }) => ({ title, meta }));
+    const localPages = [createPage, updatePage].map(({ title, meta }) => new Page(title, meta));
     const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
     return { siteName, existingPage, root, repo, readMe, parentPage, deletedPage, updatePage, createPage, remotePages, localPages, pageRefs, renderers };
 }

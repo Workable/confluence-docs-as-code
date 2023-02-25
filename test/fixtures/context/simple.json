@@ -4,7 +4,6 @@
   "pages": [
     {
       "title": "Getting started",
-      "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/getting-started.md",
       "meta": {
         "repo": "https://github.com/fixture-account/fixture-repo",
         "path": "test/fixtures/samples/simple/docs/getting-started.md",
@@ -16,7 +15,6 @@
     },
     {
       "title": "Architecture",
-      "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/architecture.md",
       "meta": {
         "repo": "https://github.com/fixture-account/fixture-repo",
         "path": "test/fixtures/samples/simple/docs/architecture.md",
@@ -28,7 +26,6 @@
     },
     {
       "title": "Database",
-      "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/references/database.md",
       "meta": {
         "repo": "https://github.com/fixture-account/fixture-repo",
         "path": "test/fixtures/samples/simple/docs/references/database.md",
@@ -40,7 +37,6 @@
     },
     {
       "title": "API",
-      "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/references/api.md",
       "meta": {
         "repo": "https://github.com/fixture-account/fixture-repo",
         "path": "test/fixtures/samples/simple/docs/references/api.md",
@@ -52,7 +48,6 @@
     },
     {
       "title": "How-To",
-      "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/how-to.md",
       "meta": {
         "repo": "https://github.com/fixture-account/fixture-repo",
         "path": "test/fixtures/samples/simple/docs/how-to.md",
@@ -73,7 +68,6 @@
   },
   "readMe": {
     "title": "Fixture Site Name",
-    "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/README.md",
     "meta": {
       "repo": "https://github.com/fixture-account/fixture-repo",
       "path": "test/fixtures/samples/simple/README.md",
