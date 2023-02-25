@@ -12,6 +12,7 @@ const sandbox = sinon.createSandbox();
 describe('context', () => {
     beforeEach(() => {
         sandbox.replace(config.github, 'refName', 'branch-name');
+        sandbox.replace(config, 'version', '1.0.0');
     });
     afterEach(() => {
         sandbox.restore();

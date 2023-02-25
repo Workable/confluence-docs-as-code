@@ -13,38 +13,74 @@
     {
       "title": "PFX: Getting started",
       "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/getting-started.md",
-      "path": "test/fixtures/samples/simple/docs/getting-started.md",
-      "sha": "cce0ac41675f6c5dc82b5fa18971b1f0ed3a7cbd01594de3f7882d5bf6fbabfe"
+      "meta": {
+        "path": "test/fixtures/samples/simple/docs/getting-started.md",
+        "sha": "cce0ac41675f6c5dc82b5fa18971b1f0ed3a7cbd01594de3f7882d5bf6fbabfe",
+        "git_ref": "branch-name",
+        "git_sha": "git-hub-sha",
+        "publisher_version": "1.0.0",
+        "repo": "https://github.com/fixture-account/fixture-repo"
+      }
     },
     {
       "title": "PFX: Architecture",
       "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/architecture.md",
-      "path": "test/fixtures/samples/simple/docs/architecture.md",
-      "sha": "3c6deb64b74f0dff9141df0e3db3f8a81b48aada02e00396de4dd7d4168a4455"
+      "meta": {
+        "path": "test/fixtures/samples/simple/docs/architecture.md",
+        "sha": "3c6deb64b74f0dff9141df0e3db3f8a81b48aada02e00396de4dd7d4168a4455",
+        "git_ref": "branch-name",
+        "git_sha": "git-hub-sha",
+        "publisher_version": "1.0.0",
+        "repo": "https://github.com/fixture-account/fixture-repo"
+      }
     },
     {
       "title": "PFX: Database",
       "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/references/database.md",
-      "path": "test/fixtures/samples/simple/docs/references/database.md",
-      "sha": "005b37cf4c7bb0ff99c68aaca833deb2f5f9b5d9e2da44e909ca3c6da554397b"
+      "meta": {
+        "path": "test/fixtures/samples/simple/docs/references/database.md",
+        "sha": "005b37cf4c7bb0ff99c68aaca833deb2f5f9b5d9e2da44e909ca3c6da554397b",
+        "git_ref": "branch-name",
+        "git_sha": "git-hub-sha",
+        "publisher_version": "1.0.0",
+        "repo": "https://github.com/fixture-account/fixture-repo"
+      }
     },
     {
       "title": "PFX: API",
       "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/references/api.md",
-      "path": "test/fixtures/samples/simple/docs/references/api.md",
-      "sha": "554ed10fafe42f7d3871dfea97bb3ae45dba94643480ea93f404f8da37bae432"
+      "meta": {
+        "path": "test/fixtures/samples/simple/docs/references/api.md",
+        "sha": "554ed10fafe42f7d3871dfea97bb3ae45dba94643480ea93f404f8da37bae432",
+        "git_ref": "branch-name",
+        "git_sha": "git-hub-sha",
+        "publisher_version": "1.0.0",
+        "repo": "https://github.com/fixture-account/fixture-repo"
+      }
     },
     {
       "title": "PFX: How-To",
       "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/docs/how-to.md",
-      "path": "test/fixtures/samples/simple/docs/how-to.md",
-      "sha": "0bbe6620d0b97b1ad9d9de01e6e3ab8d40e14d40efe4a3c1a02f2bfede8ce146"
+      "meta": {
+        "path": "test/fixtures/samples/simple/docs/how-to.md",
+        "sha": "0bbe6620d0b97b1ad9d9de01e6e3ab8d40e14d40efe4a3c1a02f2bfede8ce146",
+        "git_ref": "branch-name",
+        "git_sha": "git-hub-sha",
+        "publisher_version": "1.0.0",
+        "repo": "https://github.com/fixture-account/fixture-repo"
+      }
     }
   ],
   "readMe": {
     "title": "Fixture Site Name",
     "githubUrl": "https://github.com/fixture-account/fixture-repo/blob/branch-name/test/fixtures/samples/simple/README.md",
-    "path": "test/fixtures/samples/simple/README.md",
-    "sha": "49ae38158ace003740c7b82edef78017ed71bc2a5ad85722e1880c0f44dafaf1"
+    "meta": {
+      "path": "test/fixtures/samples/simple/README.md",
+      "sha": "49ae38158ace003740c7b82edef78017ed71bc2a5ad85722e1880c0f44dafaf1",
+      "git_ref": "branch-name",
+      "git_sha": "git-hub-sha",
+      "publisher_version": "1.0.0",
+      "repo": "https://github.com/fixture-account/fixture-repo"
+    }
   }
 }
