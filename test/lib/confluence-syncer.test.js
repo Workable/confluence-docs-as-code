@@ -279,9 +279,10 @@ describe('confluence-syncer', () => {
             const { root, repo, parentPage, siteName, existingPage, readMe } = prepareState();
             describe('when page content has not changed', () => {
                 const [path, sha] = ['docs/unchanged.md', 'abc345'];
-                const remotePages = [{ id: 100, version: 1, meta: new Meta(repo, path, sha) }];
                 const localPages = [{ title: 'Unchanged', path, sha, meta: new Meta(repo, path, sha) }];
+                let remotePages;
                 beforeEach(() => {
+                    remotePages = new Map().set(path, { id: 100, version: 1, meta: new Meta(repo, path, sha) });
                     sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
                     sdkMock.findPage.withArgs(siteName).resolves(existingPage);
                     getContextMock.returns({ siteName, repo, readMe, pages: localPages });
@@ -327,7 +328,7 @@ describe('confluence-syncer', () => {
                     });
                     describe('when patch version changes', () => {
                         it('should skip updating the unchanged page', () => {
-                            remotePages[0].publisher_version = `${majorVer}.${minorVer}.${patchVer + 1}`;
+                            remotePages.get(path).meta.publisher_version = `${majorVer}.${minorVer}.${patchVer + 1}`;
                             return sync().then(() => {
                                 sandbox.assert.notCalled(loggerMock.fail);
                                 sandbox.assert.notCalled(sdkMock.deletePage);
@@ -344,7 +345,7 @@ describe('confluence-syncer', () => {
                         describe(`when publisher ${testCase[0]}`, () => {
                             const meta = new Meta(repo, path, sha);
                             it('should also update unchanged pages', () => {
-                                remotePages[0].meta.publisher_version = testCase[1];
+                                remotePages.get(path).meta.publisher_version = testCase[1];
                                 return sync().then(() => {
                                     sandbox.assert.notCalled(loggerMock.fail);
                                     sandbox.assert.notCalled(sdkMock.deletePage);
@@ -362,7 +363,7 @@ describe('confluence-syncer', () => {
                         sandbox.replace(config.confluence, 'forceUpdate', false);
                         md2htmlMock.returns({ html, attachments: [] });
                         sdkMock.updatePage.resolves();
-                        remotePages[0].meta.publisher_version = null;
+                        remotePages.get(path).meta.publisher_version = null;
                     });
                     it('should also update unchanged pages', () => {
                         return sync().then(() => {
@@ -534,9 +535,11 @@ function prepareState(renderers = []) {
         ],
         repo, id: 300
     };
-    const remotePages = [deletedPage, updatePage].map(({ version, id, meta }) => ({ id, version, meta }));
+    const remotePages = [deletedPage, updatePage].reduce(
+        (map, { version, id, meta }) => { map.set(meta.path, { id, version, meta }); return map; },
+        new Map()
+    );
     const localPages = [createPage, updatePage].map(({ title, meta }) => ({ title, meta }));
     const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
     return { siteName, existingPage, root, repo, readMe, parentPage, deletedPage, updatePage, createPage, remotePages, localPages, pageRefs, renderers };
 }
-
