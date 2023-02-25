@@ -392,13 +392,13 @@ describe('confluence-sdk', () => {
                 requestMock.reply(200, { size: 0 });
                 return sdk
                     .getChildPages(parentPageId)
-                    .should.eventually.eql([]);
+                    .should.eventually.eql(new Map());
             });
         });
         describe('when there are child pages', () => {
             describe('when all results are returned with the first response', () => {
                 it('should return an array with the child pages', () => {
-                    const expected = [
+                    const expected = new Map().set('foo/bar/doc.md',
                         {
                             id: 1821,
                             parentId: 1453,
@@ -413,7 +413,7 @@ describe('confluence-sdk', () => {
                                 publisher_version: '1.0.0'
                             }
                         }
-                    ];
+                    );
                     requestMock.reply(200, responseFixtures.childPages);
                     return sdk
                         .getChildPages(parentPageId)
@@ -421,20 +421,24 @@ describe('confluence-sdk', () => {
                 });
                 describe('when results are paged', () => {
                     it('should traverse paged results an return all child pages', () => {
-                        const expected = [1, 2, 3].map(p => ({
-                            id: p,
-                            parentId: 1453,
-                            title: `Page ${p}`,
-                            version: p,
-                            meta: {
-                                path: `foo/bar/page${p}.md`,
-                                repo: 'https://github.com/Org/Repo',
-                                sha: 'Zm9vL2Jhci9kb2MubWQ=',
-                                git_ref: 'git_ref',
-                                git_sha: 'git_sha',
-                                publisher_version: '1.0.0'
-                            }
-                        }));
+                        const expected = [1, 2, 3].reduce((map, p) => {
+                            const page = {
+                                id: p,
+                                parentId: 1453,
+                                title: `Page ${p}`,
+                                version: p,
+                                meta: {
+                                    path: `foo/bar/page${p}.md`,
+                                    repo: 'https://github.com/Org/Repo',
+                                    sha: 'Zm9vL2Jhci9kb2MubWQ=',
+                                    git_ref: 'git_ref',
+                                    git_sha: 'git_sha',
+                                    publisher_version: '1.0.0'
+                                }
+                            };
+                            map.set(page.meta.path, page);
+                            return map;
+                        }, new Map());
 
                         const [second, third] = [1, 2].map(p => {
                             const query = qs.stringify({
