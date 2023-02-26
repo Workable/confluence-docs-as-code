@@ -14,10 +14,10 @@ describe('models/image', () => {
             image.alt.should.equal(alt);
         });
     });
-    describe('render', () => {
+    describe('markup', () => {
         it('should render appropriate markup', () => {
             const expected = `<ac:image ac:alt="${alt}"><ri:attachment ri:filename="${file}" /></ac:image>`;
-            image.render().should.equal(expected);
+            image.markup.should.equal(expected);
         });
     });
 });
