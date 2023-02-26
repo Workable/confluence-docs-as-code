@@ -8,7 +8,7 @@ import logger from '../../lib/logger.js';
 import context from '../../lib/context.js';
 import config from '../../lib/config.js';
 import util from '../../lib/util.js';
-import { Image, Graph, Meta, Page } from '../../lib/models/index.js';
+import { Image, Graph, Meta, LocalPage } from '../../lib/models/index.js';
 import PageRenderer from '../../lib/page-renderer.js';
 
 const sandbox = sinon.createSandbox();
@@ -116,7 +116,7 @@ describe('confluence-syncer', () => {
                             const html = '<h1>From README.md</h1>';
                             let readMe;
                             beforeEach(() => {
-                                readMe = new Page('README', new Meta(repo, '/path/to/README.md', 'abc123'));
+                                readMe = new LocalPage('README', new Meta(repo, '/path/to/README.md', 'abc123'));
                             });
                             describe('when README.md contains no images', () => {
                                 beforeEach(() => {
@@ -193,7 +193,7 @@ describe('confluence-syncer', () => {
                             describe('when home page sha matches', () => {
                                 let readMe;
                                 beforeEach(() => {
-                                    readMe = new Page('README', new Meta(repo, '/path/to/README.md', 'abc123'));
+                                    readMe = new LocalPage('README', new Meta(repo, '/path/to/README.md', 'abc123'));
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
                                     renderMock.withArgs(readMe).callsFake(() => {
                                         readMe.html = html;
@@ -292,7 +292,7 @@ describe('confluence-syncer', () => {
                 let remotePages;
                 let localPages;
                 beforeEach(() => {
-                    localPages = [new Page('Unchanged', new Meta(repo, path, sha))];
+                    localPages = [new LocalPage('Unchanged', new Meta(repo, path, sha))];
                     remotePages = new Map().set(path, { id: 100, version: 1, meta: new Meta(repo, path, sha) });
                     sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
                     sdkMock.findPage.withArgs(siteName).resolves(existingPage);
@@ -529,7 +529,7 @@ function prepareState(renderers = []) {
     const existingPage = { id: 1, version: 1, meta: new Meta(repo, '/path/to/README.md', 'abc123') };
     const root = 1;
     const parentPage = { id: 1 };
-    const readMe = new Page('README', new Meta(repo, '/path/to/README.md', 'abc123'));
+    const readMe = new LocalPage('README', new Meta(repo, '/path/to/README.md', 'abc123'));
     const deletedPage = {
         id: 100,
         meta: new Meta(repo, 'docs/deleted.md', 'abc123'),
@@ -558,7 +558,7 @@ function prepareState(renderers = []) {
         (map, { version, id, meta }) => { map.set(meta.path, { id, version, meta }); return map; },
         new Map()
     );
-    const localPages = [createPage, updatePage].map(({ title, meta }) => new Page(title, meta));
+    const localPages = [createPage, updatePage].map(({ title, meta }) => new LocalPage(title, meta));
     const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
     return { siteName, existingPage, root, repo, readMe, parentPage, deletedPage, updatePage, createPage, remotePages, localPages, pageRefs, renderers };
 }

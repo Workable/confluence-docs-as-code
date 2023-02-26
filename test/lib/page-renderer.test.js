@@ -2,7 +2,7 @@ import path from 'node:path';
 import { readFileSync, unlinkSync, existsSync } from 'node:fs';
 import sinon from 'sinon';
 import config from '../../lib/config.js';
-import { Image, Graph, Page, Meta } from '../../lib/models/index.js';
+import { Image, Graph, LocalPage, Meta } from '../../lib/models/index.js';
 import PageRenderer from '../../lib/page-renderer.js';
 
 const sandbox = sinon.createSandbox();
@@ -22,7 +22,7 @@ describe('page-render', () => {
             const pageRefs = { 'test/fixtures/markdown/other-page.md': 'Other Page' };
             let page;
             beforeEach(() => {
-                page = new Page('Title', new Meta(repo, mdFile));
+                page = new LocalPage('Title', new Meta(repo, mdFile));
             });
             afterEach(() => {
                 const graphs = [mmdFile, pumlFile];
