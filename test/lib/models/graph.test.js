@@ -1,4 +1,8 @@
 import Graph from '../../../lib/models/graph.js';
+import sinon from 'sinon';
+import AssetRenderer from '../../../lib/renderers/asset-renderer.js';
+
+const sandbox = sinon.createSandbox();
 
 describe('models/graph', () => {
     const file = 'file.mmd';
@@ -56,6 +60,20 @@ describe('models/graph', () => {
                 it('should render appropriate markup', () => {
                     graph.markup.should.equal(test.expected);
                 });
+            });
+        });
+    });
+    describe('render', () => {
+        let renderer;
+        beforeEach(() => {
+            graph = new Graph(path, type, renderer);
+            renderer = sandbox.createStubInstance(AssetRenderer);
+            renderer.renderGraph.callsFake(() => Promise.resolve(imageFile));
+        });
+        it('should use renderer.renderGraph to render this graph', () => {
+            return graph.render(renderer).then((file) => {
+                file.should.equal(imageFile);
+                sandbox.assert.calledWith(renderer.renderGraph, graph);
             });
         });
     });
