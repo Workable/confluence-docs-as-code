@@ -41,7 +41,7 @@ describe('models/graph', () => {
             graph.imageFilename.should.equal(imageFile);
         });
     });
-    describe('render', () => {
+    describe('markup', () => {
         const tests = [
             { renderer: 'unknown', expected: '' },
             { renderer: 'kroki', expected: `<ac:image ac:alt="${alt}"><ri:attachment ri:filename="${imageFile}" /></ac:image>` },
@@ -54,7 +54,7 @@ describe('models/graph', () => {
                     graph = new Graph(path, type, test.renderer, alt);
                 });
                 it('should render appropriate markup', () => {
-                    graph.render().should.equal(test.expected);
+                    graph.markup.should.equal(test.expected);
                 });
             });
         });
