@@ -1,11 +1,11 @@
 import sinon from 'sinon';
-import GraphRenderer from '../../lib/graph-renderer.js';
-import KrokiSdk from '../../lib/kroki-sdk.js';
-import PlantUmlSdk from '../../lib/plantuml-sdk.js';
+import GraphRenderer from '../../../lib/renderers/graph-renderer.js';
+import KrokiSdk from '../../../lib/kroki-sdk.js';
+import PlantUmlSdk from '../../../lib/plantuml-sdk.js';
 
 const sandbox = sinon.createSandbox();
 
-describe('graph-renderer', () => {
+describe('renderers/graph-renderer', () => {
     let graphRenderer;
     const config = {
         kroki: { host: 'host' },

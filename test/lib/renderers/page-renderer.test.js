@@ -1,13 +1,13 @@
 import path from 'node:path';
 import { readFileSync, unlinkSync, existsSync } from 'node:fs';
 import sinon from 'sinon';
-import config from '../../lib/config.js';
-import { Image, Graph, LocalPage, Meta } from '../../lib/models/index.js';
-import PageRenderer from '../../lib/page-renderer.js';
+import config from '../../../lib/config.js';
+import { Image, Graph, LocalPage, Meta } from '../../../lib/models/index.js';
+import PageRenderer from '../../../lib/renderers/page-renderer.js';
 
 const sandbox = sinon.createSandbox();
 
-describe('page-render', () => {
+describe('renderers/page-render', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -48,9 +48,9 @@ describe('page-render', () => {
                         new Graph(pumlFile, 'plantuml', 'kroki', 'graph_3'),
                     ];
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
-                    renderer.render(page);
-                    page.html.should.equal(expectedHtml);
-                    page.attachments.should.eql(expectedAttachments);
+                    const renderedPage = renderer.render(page);
+                    renderedPage.html.should.equal(expectedHtml);
+                    renderedPage.attachments.should.eql(expectedAttachments);
                     existsSync(mmdFile).should.be.true;
                     existsSync(pumlFile).should.be.true;
                 });
@@ -73,9 +73,9 @@ describe('page-render', () => {
                             new Graph(pumlFile, 'plantuml', 'plantuml', 'graph_3'),
                         ];
                         const expectedHtml = readFileSync(htmlFile, 'utf8');
-                        renderer.render(page);
-                        page.html.should.equal(expectedHtml);
-                        page.attachments.should.eql(expectedAttachments);
+                        const renderedPage = renderer.render(page);
+                        renderedPage.html.should.equal(expectedHtml);
+                        renderedPage.attachments.should.eql(expectedAttachments);
                         existsSync(mmdFile).should.be.true;
                         existsSync(pumlFile).should.be.true;
                     });
@@ -94,9 +94,9 @@ describe('page-render', () => {
                         new Image(imageFile, 'img1')
                     ];
                     const expectedHtml = readFileSync(htmlFile, 'utf8');
-                    renderer.render(page);
-                    page.html.should.equal(expectedHtml);
-                    page.attachments.should.eql(expectedAttachments);
+                    const renderedPage = renderer.render(page);
+                    renderedPage.html.should.equal(expectedHtml);
+                    renderedPage.attachments.should.eql(expectedAttachments);
                     existsSync(mmdFile).should.be.false;
                     existsSync(pumlFile).should.be.false;
                 });
