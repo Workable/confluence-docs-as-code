@@ -9,7 +9,7 @@ import context from '../../lib/context.js';
 import config from '../../lib/config.js';
 import util from '../../lib/util.js';
 import { Image, Graph, Meta, LocalPage } from '../../lib/models/index.js';
-import PageRenderer from '../../lib/page-renderer.js';
+import PageRenderer from '../../lib/renderers/page-renderer.js';
 
 const sandbox = sinon.createSandbox();
 
