@@ -11,6 +11,7 @@ import * as responseFixtures from '../fixtures/confluence_response/index.js';
 import retryPolicyTest from './retry-policy.test.js';
 import Meta from '../../lib/models/meta.js';
 import config from '../../lib/config.js';
+import LocalPage from '../../lib/models/local-page.js';
 
 const sandbox = sinon.createSandbox();
 const basePath = '/wiki/rest/api/content';
@@ -108,8 +109,11 @@ describe('confluence-sdk', () => {
     describe('createPage', () => {
         const title = 'A Page Title';
         const content = '<h1>hello</h1>';
+        let page;
         let requestMock;
         beforeEach(() => {
+            page = new LocalPage(title, new Meta('repo'));
+            page.html = content;
             sdk.currentUser = {
                 type: 'type',
                 accountId: 'accountId',
@@ -123,25 +127,17 @@ describe('confluence-sdk', () => {
             it('should throw a RequestError', () => {
                 requestMock.reply(400);
                 return sdk
-                    .createPage(title, content)
+                    .createPage(page)
                     .should.be.rejectedWith(RequestError);
             });
         });
         describe('when title is not specified', () => {
             it('should throw Error', () => {
+                page.title = null;
                 return sdk
-                    .createPage(null, null)
+                    .createPage(page)
                     .should.be.rejectedWith(
                         'title should be a string'
-                    );
-            });
-        });
-        describe('when html is not specified', () => {
-            it('should throw Error', () => {
-                return sdk
-                    .createPage(title, null)
-                    .should.be.rejectedWith(
-                        'html should be a string'
                     );
             });
         });
@@ -149,50 +145,61 @@ describe('confluence-sdk', () => {
             describe('without parent or meta', () => {
                 it('should return the id of the new page', () => {
                     const pageId = 1975;
+                    page.meta = null;
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .post(basePath, createPageFixtures.simple)
                         .reply(200, { id: pageId });
                     return sdk
-                        .createPage(title, content)
-                        .should.eventually.equal(pageId);
+                        .createPage(page).then(created => {
+                            created.should.equal(page);
+                            created.confluencePageId.should.equal(pageId);
+                        });
                 });
             });
             describe('with parent page and no meta', () => {
                 it('should return the id of the new page', () => {
                     const pageId = 1821;
                     const parentPage = 1453;
+                    page.meta = null;
+                    page.parentPageId = parentPage;
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .post(basePath, createPageFixtures.withParent)
                         .reply(200, { id: pageId });
                     return sdk
-                        .createPage(title, content, parentPage)
-                        .should.eventually.equal(pageId);
+                        .createPage(page).then(created => {
+                            created.should.equal(page);
+                        });
                 });
             });
             describe('with parent page and meta', () => {
                 it('should return the id of the new page', () => {
                     const pageId = 1821;
                     const parentPage = 1453;
-                    const meta = new Meta('repo');
+                    page.meta = new Meta('repo');
+                    page.parentPageId = parentPage;
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .post(basePath, createPageFixtures.withParentAndMeta)
                         .reply(200, { id: pageId });
                     return sdk
-                        .createPage(title, content, parentPage, meta)
-                        .should.eventually.equal(pageId);
+                        .createPage(page).then(created => {
+                            created.should.equal(page);
+                            created.confluencePageId.should.equal(pageId);
+                        });
                 });
             });
             describe('when meta is not an instance of Meta', () => {
                 it('should throw Error', () => {
+                    page.meta = 'meta';
                     return sdk
-                        .createPage(title, content, 1234, 'foo')
+                        .createPage(page)
                         .should.be.rejectedWith('meta is not an instance of Meta class');
                 });
             });
             describe('when parent is not an number', () => {
                 it('should throw Error', () => {
+                    page.parentPageId = 'string';
                     return sdk
-                        .createPage(title, content, 'String')
+                        .createPage(page)
                         .should.be.rejectedWith(
                             'parentPage should be a number'
                         );

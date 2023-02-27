@@ -4,6 +4,9 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import LocalPage from '../../../lib/models/local-page.js';
 import AssetRenderer from '../../../lib/renderers/asset-renderer.js';
+import Attachment from '../../../lib/models/attachment.js';
+import ConfluenceSdk from '../../../lib/confluence-sdk.js';
+import logger from '../../../lib/logger.js';
 
 const sandbox = sinon.createSandbox();
 
@@ -18,7 +21,7 @@ describe('models/local-page', () => {
         });
     });
     describe('attachments', () => {
-        it('should get and set html content of page', () => {
+        it('should get and set attachments of page', () => {
             const page = new LocalPage('title', 'meta');
             page.attachments.should.eql([]);
             page.attachments = ['attachment'];
@@ -26,11 +29,29 @@ describe('models/local-page', () => {
 
         });
     });
+    describe('attachmentFiles', () => {
+        it('should get and set attachmentFiles of page', () => {
+            const page = new LocalPage('title', 'meta');
+            page.attachmentFiles.should.eql([]);
+            page.attachmentFiles = ['attachment'];
+            page.attachmentFiles.should.eql(['attachment']);
+
+        });
+    });
+    describe('parentPageId', () => {
+        const id = 10102;
+        it('should get and set parentPageId of page', () => {
+            const page = new LocalPage('title', 'meta');
+            page.parentPageId = id;
+            page.parentPageId.should.equal(id);
+
+        });
+    });
     describe('loadMarkdown', () => {
-        describe('when meta.path is not a string', () => {
-            it('should throw error', () => {
+        describe('when meta.path is missing', () => {
+            it('should return undefined', () => {
                 const page = new LocalPage('title', 'meta');
-                expect(() => page.loadMarkdown()).to.throw('path parameter is required');
+                expect(page.loadMarkdown()).to.be.undefined;
             });
         });
         describe('when meta.path is not md', () => {
@@ -48,17 +69,51 @@ describe('models/local-page', () => {
             });
         });
     });
-    describe('render', () => {
-        let renderer;
-        let page;
+    describe('renderAttachments', () => {
+        const attachmentPath = 'attachment/path';
+        let page, attachment, loggerMock, renderer;
+        beforeEach(() => {
+            attachment = new Attachment(attachmentPath);
+            sandbox.stub(attachment, 'render').resolves();
+            page = new LocalPage('title', 'meta');
+            page.attachments = [attachment];
+            renderer = sandbox.createStubInstance(AssetRenderer);
+            loggerMock = sandbox.stub(logger, 'warn');
+        });
+        describe('when attachment fails to render', () => {
+            it('should log warning and skip attachment', () => {
+                return page.renderAttachments(renderer).then(() => {
+                    page.attachmentFiles.should.eql([]);
+                    sandbox.assert.calledWith(loggerMock, `Attachment "${attachmentPath}" could not be processed`);
+                });
+            });
+        });
+    });
+    describe('sync', () => {
+        const confluencePageId = 101;
+        const attachmentPath = 'attachment/path';
+        let renderer, confluence;
+        let page, attachment;
         beforeEach(() => {
             page = new LocalPage('title', 'meta');
+            attachment = new Attachment(attachmentPath);
             renderer = sandbox.createStubInstance(AssetRenderer);
-            renderer.renderPage.callsFake(() => page);
+            renderer.renderPage.callsFake(() => {
+                page.attachments = [attachment];
+                return page;
+            });
+            confluence = sandbox.createStubInstance(ConfluenceSdk);
+            confluence.createPage.callsFake(() => {
+                page.confluencePageId = confluencePageId;
+                return Promise.resolve();
+            });
+            confluence.createAttachment.resolves();
         });
-        it('should use renderer.renderPage to render this page', () => {
-            page.render(renderer).should.equal(page);
-            sandbox.assert.calledWith(renderer.renderPage, page);
+        it('should render the page and publish to confluence', () => {
+            return page.sync(renderer, confluence).then(() => {
+                sandbox.assert.calledWith(confluence.createPage, page);
+                sandbox.assert.calledWith(confluence.createAttachment, confluencePageId, attachmentPath);
+            });
         });
     });
 });
