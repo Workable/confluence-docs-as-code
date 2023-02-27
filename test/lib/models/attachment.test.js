@@ -1,5 +1,4 @@
 import Attachment from '../../../lib/models/attachment.js';
-import { expect } from 'chai';
 
 describe('models/attachment', () => {
     const file = 'file.ext';
@@ -19,8 +18,8 @@ describe('models/attachment', () => {
         });
     });
     describe('render', () => {
-        it('should throw exception', () => {
-            expect(() => attachment.render()).to.throw('Not implemented!');
+        it('should return the path', () => {
+            attachment.render().should.equal(path);
         });
     });
 });
