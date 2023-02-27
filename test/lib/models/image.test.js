@@ -20,4 +20,9 @@ describe('models/image', () => {
             image.markup.should.equal(expected);
         });
     });
+    describe('render', () => {
+        it('should return the path', () => {
+            image.render().should.equal(path);
+        });
+    });
 });
