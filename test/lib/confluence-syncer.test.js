@@ -1,26 +1,20 @@
-import { resolve } from 'node:path';
 import sinon from 'sinon';
 import { sync, cleanup } from '../../lib/confluence-syncer.js';
 import ConfluenceSDK from '../../lib/confluence-sdk.js';
-import KrokiSDK from '../../lib/kroki-sdk.js';
-import PlantUmlSdk from '../../lib/plantuml-sdk.js';
 import logger from '../../lib/logger.js';
 import context from '../../lib/context.js';
 import config from '../../lib/config.js';
-import util from '../../lib/util.js';
-import { Image, Graph, Meta, LocalPage } from '../../lib/models/index.js';
+import { Meta, LocalPage, RemotePage } from '../../lib/models/index.js';
 import PageRenderer from '../../lib/renderers/page-renderer.js';
+import AssetRenderer from '../../lib/renderers/asset-renderer.js';
 
 const sandbox = sinon.createSandbox();
 
 describe('confluence-syncer', () => {
+    const [repo, siteName] = ['repo', 'Site Name'];
     let getContextMock;
     let sdkMock = {};
     let loggerMock = {};
-    let renderMock;
-    let krokiMock;
-    let plantUmlMock;
-    const [majorVer, minorVer, patchVer] = config.version.split('.').map(i => Number.parseInt(i));
 
     beforeEach(() => {
         [
@@ -41,9 +35,7 @@ describe('confluence-syncer', () => {
             loggerMock[method] = sandbox.stub(logger, method);
         });
         getContextMock = sandbox.stub(context, 'getContext');
-        renderMock = sandbox.stub(PageRenderer.prototype, 'render');
-        krokiMock = sandbox.stub(KrokiSDK.prototype, 'toPng');
-        plantUmlMock = sandbox.stub(PlantUmlSdk.prototype, 'toPng');
+        sandbox.stub(PageRenderer.prototype, 'render');
     });
     afterEach(() => {
         sandbox.restore();
@@ -78,6 +70,31 @@ describe('confluence-syncer', () => {
             });
         });
         describe('sync home page', () => {
+            describe('when parent page is not configured', () => {
+                beforeEach(() => {
+                    sandbox.replace(config, 'confluence', { parentPage: null });
+                });
+                describe('when README.md not exists', () => {
+                    let readMe;
+                    beforeEach(() => {
+                        readMe = new LocalPage(siteName, new Meta(repo));
+                        readMe.html = `<h1>${siteName}</h1>`;
+                        readMe.attachments = [];
+                        readMe.attachmentFiles = [];
+                        readMe.parentPageId = undefined;
+                        sdkMock.findPage.withArgs(siteName).resolves();
+                        sdkMock.getChildPages.resolves(new Map());
+                        getContextMock.returns({ siteName, repo, pages: [], readMe: null });
+                        sdkMock.createPage.resolves(new RemotePage(100, 1, siteName, new Meta(repo), 1));
+                    });
+                    it('should create home page without parent', () => {
+                        return sync().then(() => {
+                            sandbox.assert.notCalled(loggerMock.fail);
+                            sandbox.assert.calledWith(sdkMock.createPage, readMe);
+                        });
+                    });
+                });
+            });
             describe('when parent page is configured', () => {
                 describe('when parent page not found', () => {
                     it('should fail with error', () => {
@@ -90,75 +107,58 @@ describe('confluence-syncer', () => {
                     });
                 });
                 describe('when parent page exists', () => {
-                    const { repo, siteName, parentPage } = prepareState();
+                    let parentPage;
                     beforeEach(() => {
+                        parentPage = new RemotePage(1, 1, 'Parent Page', new Meta('git-repo'));
                         sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
                     });
                     describe('when home page does not exist', () => {
-                        const html = `<h1>${siteName}</h1>`;
-                        const meta = new Meta(repo);
+                        let readMe;
                         beforeEach(() => {
+                            readMe = new LocalPage(siteName, new Meta(repo));
+                            readMe.html = `<h1>${siteName}</h1>`;
+                            readMe.parentPageId = parentPage.id;
+                            readMe.attachments = [];
+                            readMe.attachmentFiles = [];
                             sdkMock.findPage.withArgs(siteName).resolves();
-                            sdkMock.getChildPages.resolves([]);
+                            sdkMock.getChildPages.resolves(new Map());
                         });
                         describe('when README.md not exists', () => {
                             beforeEach(() => {
                                 getContextMock.returns({ siteName, repo, pages: [], readMe: null });
+                                sdkMock.createPage.resolves(new RemotePage(100, 1, siteName, new Meta(repo), 1));
                             });
                             it('should create the page using the site name as content', () => {
                                 return sync().then(() => {
                                     sandbox.assert.notCalled(loggerMock.fail);
-                                    sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, meta);
+                                    sandbox.assert.calledWith(sdkMock.createPage, readMe);
                                 });
                             });
                         });
                         describe('when README.md exists', () => {
-                            const html = '<h1>From README.md</h1>';
                             let readMe;
                             beforeEach(() => {
-                                readMe = new LocalPage('README', new Meta(repo, '/path/to/README.md', 'abc123'));
+                                readMe = new LocalPage(siteName, new Meta(repo, '/path/to/README.md', 'abc123'));
                             });
                             describe('when README.md contains no images', () => {
                                 beforeEach(() => {
                                     getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                    renderMock.withArgs(readMe).callsFake(() => {
-                                        readMe.html = html;
-                                    });
+                                    sdkMock.createPage.resolves(new RemotePage(100, 1, siteName, new Meta(repo), 1));
                                 });
                                 it('should create the page using the README.md as content', () => {
                                     return sync().then(() => {
                                         sandbox.assert.notCalled(loggerMock.fail);
-                                        sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, readMe.meta);
-                                        sandbox.assert.notCalled(sdkMock.createAttachment);
+                                        sandbox.assert.calledWith(sdkMock.createPage, readMe);
                                     });
                                 });
                             });
-                            describe('when README.md contains images', () => {
-                                const id = 1;
-                                beforeEach(() => {
-                                    renderMock.withArgs(readMe).callsFake(() => {
-                                        readMe.html = html;
-                                        readMe.attachments.push(new Image('image/path/image-file.png'));
-                                    });
-                                    getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                    sdkMock.createPage.returns(id);
-                                });
-                                it('should create the page using the content and images from README.md', () => {
-                                    return sync().then(() => {
-                                        sandbox.assert.notCalled(loggerMock.fail);
-                                        sandbox.assert.calledWith(sdkMock.createPage, siteName, html, parentPage.id, readMe.meta);
-                                        sandbox.assert.calledWith(sdkMock.createAttachment, id, resolve('image/path/image-file.png'));
-                                    });
-                                });
-                            });
-
                         });
                     });
                     describe('when home page exists', () => {
-                        const { repo, siteName, existingPage } = prepareState();
-                        const html = `<h1>${siteName}</h1>`;
-                        const meta = new Meta(repo);
+                        let existingPage;
                         beforeEach(() => {
+                            existingPage = sandbox.createStubInstance(RemotePage);
+                            existingPage.sync.resolves({ id: 100 });
                             sdkMock.findPage.withArgs(siteName).resolves(existingPage);
                             sdkMock.getChildPages.resolves([]);
                         });
@@ -169,9 +169,9 @@ describe('confluence-syncer', () => {
                             describe('when home page sha does not match', () => {
                                 it('should update the page using the site name as content', () => {
                                     return sync().then(() => {
-                                        sandbox.assert.calledWith(sdkMock.updatePage, existingPage.id, existingPage.version + 1, siteName, html, parentPage.id, meta);
-                                        sandbox.assert.notCalled(sdkMock.createAttachment);
                                         sandbox.assert.notCalled(loggerMock.fail);
+                                        sandbox.assert.notCalled(sdkMock.createAttachment);
+                                        sandbox.assert.calledWith(existingPage.sync, sinon.match.instanceOf(AssetRenderer), sinon.match.instanceOf(ConfluenceSDK));
                                     });
                                 });
                             });
@@ -179,6 +179,8 @@ describe('confluence-syncer', () => {
 
                         describe('when repo does not match', () => {
                             beforeEach(() => {
+                                existingPage.repoConflict.returns(true);
+                                existingPage.meta = { repo };
                                 getContextMock.returns({ siteName, repo: 'other-repo', pages: [], readMe: null });
                             });
                             it('should fail with error', () => {
@@ -188,297 +190,68 @@ describe('confluence-syncer', () => {
                                 });
                             });
                         });
-                        describe('when README.md exists', () => {
-                            const html = '<h1>From README.md</h1>';
-                            describe('when home page sha matches', () => {
-                                let readMe;
-                                beforeEach(() => {
-                                    readMe = new LocalPage('README', new Meta(repo, '/path/to/README.md', 'abc123'));
-                                    getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                    renderMock.withArgs(readMe).callsFake(() => {
-                                        readMe.html = html;
-                                    });
-                                });
-                                describe('when force update is disabled', () => {
-                                    beforeEach(() => {
-                                        sandbox.replace(config.confluence, 'forceUpdate', false);
-                                    });
-                                    it('should not update the page', () => {
-                                        return sync().then(() => {
-                                            sandbox.assert.notCalled(loggerMock.fail);
-                                            sandbox.assert.notCalled(sdkMock.createAttachment);
-                                            sandbox.assert.notCalled(sdkMock.createPage);
-                                            sandbox.assert.notCalled(sdkMock.updatePage);
-                                        });
-                                    });
-                                });
-                                describe('when force update is enabled', () => {
-                                    beforeEach(() => {
-                                        sandbox.replace(config.confluence, 'forceUpdate', true);
-                                        getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                    });
-                                    it('should update the page using the README.md as content', () => {
-                                        return sync().then(() => {
-                                            sandbox.assert.notCalled(loggerMock.fail);
-                                            sandbox.assert.notCalled(sdkMock.createAttachment);
-                                            sandbox.assert.calledWith(
-                                                sdkMock.updatePage,
-                                                existingPage.id,
-                                                existingPage.version + 1,
-                                                siteName,
-                                                html,
-                                                parentPage.id,
-                                                existingPage.meta
-                                            );
-                                        });
-                                    });
-                                });
-                                describe('when publisher version changes', () => {
-                                    beforeEach(() => {
-                                        sandbox.replace(config.confluence, 'forceUpdate', false);
-                                        getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                        existingPage.meta.publisher_version = '0.1.1';
-                                    });
-                                    it('should update the page using the README.md as content', () => {
-                                        return sync().then(() => {
-                                            sandbox.assert.notCalled(loggerMock.fail);
-                                            sandbox.assert.notCalled(sdkMock.createAttachment);
-                                            sandbox.assert.calledWith(
-                                                sdkMock.updatePage,
-                                                existingPage.id,
-                                                existingPage.version + 1,
-                                                siteName,
-                                                html,
-                                                parentPage.id,
-                                                readMe.meta
-                                            );
-                                        });
-                                    });
-                                });
-                            });
-                            describe('when home page sha does not match', () => {
-                                const { readMe, existingPage } = prepareState();
-                                beforeEach(() => {
-                                    getContextMock.returns({ siteName, repo, pages: [], readMe });
-                                    renderMock.withArgs(readMe).callsFake(() => {
-                                        readMe.html = html;
-                                    });
-                                });
-                                it('should update the page using the README.md as content', () => {
-                                    return sync().then(() => {
-                                        sandbox.assert.notCalled(loggerMock.fail);
-                                        sandbox.assert.notCalled(sdkMock.createAttachment);
-                                        sandbox.assert.calledWith(
-                                            sdkMock.updatePage,
-                                            existingPage.id,
-                                            existingPage.version + 1,
-                                            siteName,
-                                            html,
-                                            parentPage.id,
-                                            readMe.meta
-                                        );
-                                    });
-                                });
-                            });
-                        });
                     });
                 });
             });
         });
         describe('sync child pages', () => {
-            const { root, repo, parentPage, siteName, existingPage, readMe } = prepareState();
-            describe('when page content has not changed', () => {
-                const [path, sha] = ['docs/unchanged.md', 'abc345'];
-                let remotePages;
-                let localPages;
+            let parentPage, readMe;
+            beforeEach(() => {
+                parentPage = new RemotePage(1, 1, 'Parent Page', new Meta(repo));
+                readMe = sandbox.createStubInstance(LocalPage);
+                readMe.sync.resolves({ id: 100 });
+                sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
+            });
+            describe('when local page is new', () => {
+                let local;
                 beforeEach(() => {
-                    localPages = [new LocalPage('Unchanged', new Meta(repo, path, sha))];
-                    remotePages = new Map().set(path, { id: 100, version: 1, meta: new Meta(repo, path, sha) });
-                    sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
-                    sdkMock.findPage.withArgs(siteName).resolves(existingPage);
-                    getContextMock.returns({ siteName, repo, readMe, pages: localPages });
-                    sdkMock.getChildPages.withArgs(root).resolves(remotePages);
+                    local = sandbox.createStubInstance(LocalPage);
+                    local.meta = new Meta(repo, 'path');
+                    getContextMock.returns({ siteName, repo, pages: [local], readMe });
+                    sdkMock.getChildPages.resolves(new Map());
                 });
-                describe('when force update is disabled', () => {
-                    beforeEach(() => {
-                        sandbox.replace(config.confluence, 'forceUpdate', false);
-                    });
-                    it('should skip updating the unchanged page', () => {
-                        return sync().then(() => {
-                            sandbox.assert.notCalled(loggerMock.fail);
-                            sandbox.assert.notCalled(sdkMock.deletePage);
-                            sandbox.assert.notCalled(sdkMock.updatePage);
-                            sandbox.assert.notCalled(sdkMock.createPage);
-                        });
-                    });
-                });
-                describe('when force update is enabled', () => {
-                    const html = '<h1>Unchanged Page</h1>';
-                    const meta = new Meta(repo, path, sha);
-                    beforeEach(() => {
-                        sandbox.replace(config.confluence, 'forceUpdate', true);
-                        renderMock.callsFake(() => {
-                            localPages[0].html = html;
-                        });
-                        sdkMock.updatePage.resolves();
-                    });
-                    it('should also update unchanged pages', () => {
-                        return sync().then(() => {
-                            sandbox.assert.notCalled(loggerMock.fail);
-                            sandbox.assert.notCalled(sdkMock.deletePage);
-                            sandbox.assert.notCalled(sdkMock.createPage);
-                            sandbox.assert.calledWith(sdkMock.updatePage, 100, 2, 'Unchanged', html, root, meta);
-                        });
-                    });
-                });
-                describe('when publisher version changes', () => {
-                    const html = '<h1>Unchanged Page</h1>';
-                    beforeEach(() => {
-                        sandbox.replace(config.confluence, 'forceUpdate', false);
-                        renderMock.callsFake(() => {
-                            localPages[0].html = html;
-                        });
-                        sdkMock.updatePage.resolves();
-                    });
-                    describe('when patch version changes', () => {
-                        it('should skip updating the unchanged page', () => {
-                            remotePages.get(path).meta.publisher_version = `${majorVer}.${minorVer}.${patchVer + 1}`;
-                            return sync().then(() => {
-                                sandbox.assert.notCalled(loggerMock.fail);
-                                sandbox.assert.notCalled(sdkMock.deletePage);
-                                sandbox.assert.notCalled(sdkMock.updatePage);
-                                sandbox.assert.notCalled(sdkMock.createPage);
-                            });
-                        });
-                    });
-                    [
-                        ['version missing', null],
-                        ['major version changes', `${majorVer + 1}.0.0`],
-                        ['minor version changes', `${majorVer}.${minorVer + 1}.0`]
-                    ].forEach(testCase => {
-                        describe(`when publisher ${testCase[0]}`, () => {
-                            const meta = new Meta(repo, path, sha);
-                            it('should also update unchanged pages', () => {
-                                remotePages.get(path).meta.publisher_version = testCase[1];
-                                return sync().then(() => {
-                                    sandbox.assert.notCalled(loggerMock.fail);
-                                    sandbox.assert.notCalled(sdkMock.deletePage);
-                                    sandbox.assert.notCalled(sdkMock.createPage);
-                                    sandbox.assert.calledWith(sdkMock.updatePage, 100, 2, 'Unchanged', html, root, meta);
-                                });
-                            });
-                        });
-                    });
-                });
-                describe('when publisher version missing', () => {
-                    const html = '<h1>Unchanged Page</h1>';
-                    const meta = new Meta(repo, path, sha);
-                    beforeEach(() => {
-                        sandbox.replace(config.confluence, 'forceUpdate', false);
-                        renderMock.callsFake(() => {
-                            localPages[0].html = html;
-                        });
-                        sdkMock.updatePage.resolves();
-                        remotePages.get(path).meta.publisher_version = null;
-                    });
-                    it('should also update unchanged pages', () => {
-                        return sync().then(() => {
-                            sandbox.assert.notCalled(loggerMock.fail);
-                            sandbox.assert.notCalled(sdkMock.deletePage);
-                            sandbox.assert.notCalled(sdkMock.createPage);
-                            sandbox.assert.calledWith(sdkMock.updatePage, 100, 2, 'Unchanged', html, root, meta);
-                        });
+                it('should sync the local page', () => {
+                    return sync().then(() => {
+                        sandbox.assert.notCalled(loggerMock.fail);
+                        sandbox.assert.calledWith(local.sync, sinon.match.instanceOf(AssetRenderer), sinon.match.instanceOf(ConfluenceSDK));
                     });
                 });
             });
-            describe('when there are all kind of changed to be performed', () => {
-                describe('when all graphs rendered with kroki', () => {
-                    const renderers = ['kroki', 'kroki'];
-                    const state = prepareState(renderers);
-                    beforeEach(() => {
-                        prepareMocks(state);
-                    });
-                    it('should sync page changes with attachments', () => {
-                        return assertSync(state);
+            describe('when remote page is orphan', () => {
+                let remote;
+                beforeEach(() => {
+                    remote = sandbox.createStubInstance(RemotePage);
+                    getContextMock.returns({ siteName, repo, pages: [], readMe });
+                    sdkMock.getChildPages.resolves(new Map().set('path', remote));
+                });
+                it('should sync the remote page', () => {
+                    return sync().then(() => {
+                        sandbox.assert.notCalled(loggerMock.fail);
+                        sandbox.assert.calledWith(remote.sync, sinon.match.instanceOf(AssetRenderer), sinon.match.instanceOf(ConfluenceSDK));
                     });
                 });
-                describe('when mermaid graphs are rendered as confluence plugin', () => {
-                    const renderers = ['mermaid-plugin', 'plantuml'];
-                    const state = prepareState(renderers);
-                    beforeEach(() => {
-                        prepareMocks(state);
-                    });
-                    it('should sync page changes with attachments', () => {
-                        return assertSync(state);
+            });
+            describe('when remote matched local page', () => {
+                const path = 'path';
+                let remote, local;
+                beforeEach(() => {
+                    local = sandbox.createStubInstance(LocalPage);
+                    local.meta = new Meta(repo, path);
+                    remote = sandbox.createStubInstance(RemotePage);
+                    getContextMock.returns({ siteName, repo, pages: [local], readMe });
+                    sdkMock.getChildPages.resolves(new Map().set(path, remote));
+                });
+                it('should sync the remote page', () => {
+                    return sync().then(() => {
+                        sandbox.assert.notCalled(loggerMock.fail);
+                        sandbox.assert.calledWith(remote.sync, sinon.match.instanceOf(AssetRenderer), sinon.match.instanceOf(ConfluenceSDK));
+                        remote.localPage.should.equal(local);
                     });
                 });
             });
         });
-        function assertSync({ root, deletedPage, updatePage, createPage, renderers }) {
-            return sync().then(() => {
-                sandbox.assert.notCalled(loggerMock.fail);
-                sandbox.assert.callOrder(sdkMock.deletePage, sdkMock.updatePage, sdkMock.createPage);
-                sandbox.assert.calledWith(
-                    sdkMock.createPage,
-                    createPage.title,
-                    createPage.html,
-                    root,
-                    createPage.meta
-                );
-                sandbox.assert.calledWith(
-                    sdkMock.updatePage,
-                    updatePage.id,
-                    updatePage.version + 1,
-                    updatePage.title,
-                    updatePage.html,
-                    root,
-                    updatePage.meta
-                );
-                sandbox.assert.calledWith(sdkMock.deletePage, deletedPage.id);
-                // Attachments
 
-                sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.attachments[0].path));
-                sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.attachments[0].path));
-                if (renderers[0] === 'kroki') {
-                    sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.attachments[1].path.slice(0, -4) + '.png'));
-                    sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.attachments[1].path.slice(0, -4) + '.png'));
-                    sandbox.assert.callCount(sdkMock.createAttachment, 4);
-                    sandbox.assert.calledWith(loggerMock.warn, `Graph "${createPage.attachments[2].path}" for page #${createPage.id} could not be processed`);
-                } else {
-                    sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.attachments[1].path));
-                    sandbox.assert.calledWith(sdkMock.createAttachment, createPage.id, resolve(createPage.attachments[2].path.slice(0, -5) + '.png'));
-                    sandbox.assert.calledWith(sdkMock.createAttachment, updatePage.id, resolve(updatePage.attachments[1].path));
-                    sandbox.assert.callCount(sdkMock.createAttachment, 5);
-                    sandbox.assert.notCalled(loggerMock.warn);
-                }
 
-            });
-        }
-        function prepareMocks(state) {
-            const {
-                root, repo, readMe, parentPage, siteName, existingPage, updatePage,
-                createPage, remotePages, localPages, pageRefs
-            } = state;
-            sdkMock.findPage.withArgs(config.confluence.parentPage).resolves(parentPage);
-            sdkMock.findPage.withArgs(siteName).resolves(existingPage);
-            sdkMock.createPage.resolves(createPage.id);
-            sdkMock.updatePage.resolves();
-            sdkMock.deletePage.resolves();
-            sdkMock.getChildPages.withArgs(root).resolves(remotePages);
-            getContextMock.returns({ siteName, repo, readMe, pages: localPages, pageRefs });
-            renderMock.withArgs(localPages[0]).callsFake(() => {
-                localPages[0].html = createPage.html;
-                localPages[0].attachments = createPage.attachments;
-            });
-            renderMock.withArgs(localPages[1]).callsFake(() => {
-                localPages[1].html = updatePage.html;
-                localPages[1].attachments = updatePage.attachments;
-            });
-            krokiMock.withArgs(updatePage.attachments[1]).resolves(updatePage.attachments[1].path.slice(0, -4) + '.png');
-            krokiMock.withArgs(createPage.attachments[1]).resolves(createPage.attachments[1].path.slice(0, -4) + '.png');
-            plantUmlMock.withArgs(createPage.attachments[2]).resolves(createPage.attachments[2].path.slice(0, -5) + '.png');
-            krokiMock.withArgs(createPage.attachments[2]).resolves();
-        }
     });
     describe('cleanup', () => {
         const siteName = 'My Site';
@@ -522,43 +295,3 @@ describe('confluence-syncer', () => {
         });
     });
 });
-
-function prepareState(renderers = []) {
-    const siteName = 'Site Name';
-    const repo = 'git-repo';
-    const existingPage = { id: 1, version: 1, meta: new Meta(repo, '/path/to/README.md', 'abc123') };
-    const root = 1;
-    const parentPage = { id: 1 };
-    const readMe = new LocalPage('README', new Meta(repo, '/path/to/README.md', 'abc123'));
-    const deletedPage = {
-        id: 100,
-        meta: new Meta(repo, 'docs/deleted.md', 'abc123'),
-    };
-    const updatePage = {
-        title: 'Updated Page',
-        html: '<h1>Updated Page</h1>',
-        meta: new Meta(repo, 'docs/updated.md', 'abc123'),
-        attachments: [
-            new Image('create-page-image.png'),
-            new Graph('update-page-graph.mmd', 'mermaid', renderers[0])
-        ], repo, version: 1, id: 200
-    };
-    const createPage = {
-        title: 'Created Page',
-        html: '<h1>Created Page</h1>',
-        meta: new Meta(repo, 'docs/created.md', 'abc456'),
-        attachments: [
-            new Image('create-page-image.png'),
-            new Graph('create-page-graph.mmd', 'mermaid', renderers[0]),
-            new Graph('unprocessable-graph.puml', 'plantuml', renderers[1])
-        ],
-        repo, id: 300
-    };
-    const remotePages = [deletedPage, updatePage].reduce(
-        (map, { version, id, meta }) => { map.set(meta.path, { id, version, meta }); return map; },
-        new Map()
-    );
-    const localPages = [createPage, updatePage].map(({ title, meta }) => new LocalPage(title, meta));
-    const pageRefs = { pages: util.keyBy(localPages.concat(readMe), 'path') };
-    return { siteName, existingPage, root, repo, readMe, parentPage, deletedPage, updatePage, createPage, remotePages, localPages, pageRefs, renderers };
-}
