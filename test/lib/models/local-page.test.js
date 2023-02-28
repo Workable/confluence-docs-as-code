@@ -7,6 +7,7 @@ import AssetRenderer from '../../../lib/renderers/asset-renderer.js';
 import Attachment from '../../../lib/models/attachment.js';
 import ConfluenceSdk from '../../../lib/confluence-sdk.js';
 import logger from '../../../lib/logger.js';
+import { RemotePage } from '../../../lib/models/index.js';
 
 const sandbox = sinon.createSandbox();
 
@@ -90,7 +91,7 @@ describe('models/local-page', () => {
         });
     });
     describe('sync', () => {
-        const confluencePageId = 101;
+        const id = 101;
         const attachmentPath = 'attachment/path';
         let renderer, confluence;
         let page, attachment;
@@ -103,16 +104,14 @@ describe('models/local-page', () => {
                 return page;
             });
             confluence = sandbox.createStubInstance(ConfluenceSdk);
-            confluence.createPage.callsFake(() => {
-                page.confluencePageId = confluencePageId;
-                return Promise.resolve();
-            });
+            const remote = new RemotePage(id, 1, 'title');
+            confluence.createPage.resolves(remote);
             confluence.createAttachment.resolves();
         });
         it('should render the page and publish to confluence', () => {
             return page.sync(renderer, confluence).then(() => {
                 sandbox.assert.calledWith(confluence.createPage, page);
-                sandbox.assert.calledWith(confluence.createAttachment, confluencePageId, attachmentPath);
+                sandbox.assert.calledWith(confluence.createAttachment, id, attachmentPath);
             });
         });
     });

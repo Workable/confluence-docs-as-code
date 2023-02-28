@@ -9,9 +9,8 @@ import * as createPageFixtures from '../fixtures/sdk_request/create_page/index.j
 import * as updatePageFixtures from '../fixtures/sdk_request/update_page/index.js';
 import * as responseFixtures from '../fixtures/confluence_response/index.js';
 import retryPolicyTest from './retry-policy.test.js';
-import Meta from '../../lib/models/meta.js';
+import { Meta, LocalPage, RemotePage } from '../../lib/models/index.js';
 import config from '../../lib/config.js';
-import LocalPage from '../../lib/models/local-page.js';
 
 const sandbox = sinon.createSandbox();
 const basePath = '/wiki/rest/api/content';
@@ -66,22 +65,18 @@ describe('confluence-sdk', () => {
             );
         });
         describe('when page is found', () => {
-            it('should return the id of the page', () => {
-                const expected = {
-                    id: 1821,
-                    title: 'Test',
-                    version: 18,
-                    meta: {
-                        path: 'foo/bar/doc.md',
-                        repo: 'https://github.com/Org/Repo',
-                        sha: 'Zm9vL2Jhci9kb2MubWQ=',
-                        git_ref: 'git_ref',
-                        git_sha: 'git_sha',
-                        publisher_version: '1.0.0'
-                    }
-                };
+            it('should return a RemotePage instance', () => {
+                const meta = new Meta(
+                    'https://github.com/Org/Repo',
+                    'foo/bar/doc.md',
+                    'Zm9vL2Jhci9kb2MubWQ=',
+                    'git_ref',
+                    'git_sha',
+                    '1.0.0'
+                );
+                const remotePage = new RemotePage(1821, 18, 'Test', meta);
                 requestMock.reply(200, responseFixtures.childPages);
-                return sdk.findPage(title).should.eventually.eql(expected);
+                return sdk.findPage(title).should.eventually.eql(remotePage);
             });
         });
         describe('when title is not specified', () => {
@@ -146,13 +141,14 @@ describe('confluence-sdk', () => {
                 it('should return the id of the new page', () => {
                     const pageId = 1975;
                     page.meta = null;
+                    const expected = new RemotePage(pageId, 1, page.title, page.meta, page.parentPageId);
+                    expected.localPage = page;
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .post(basePath, createPageFixtures.simple)
                         .reply(200, { id: pageId });
                     return sdk
                         .createPage(page).then(created => {
-                            created.should.equal(page);
-                            created.confluencePageId.should.equal(pageId);
+                            created.should.eql(expected);
                         });
                 });
             });
@@ -162,12 +158,14 @@ describe('confluence-sdk', () => {
                     const parentPage = 1453;
                     page.meta = null;
                     page.parentPageId = parentPage;
+                    const expected = new RemotePage(pageId, 1, page.title, page.meta, page.parentPageId);
+                    expected.localPage = page;
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .post(basePath, createPageFixtures.withParent)
                         .reply(200, { id: pageId });
                     return sdk
                         .createPage(page).then(created => {
-                            created.should.equal(page);
+                            created.should.eql(expected);
                         });
                 });
             });
@@ -177,13 +175,14 @@ describe('confluence-sdk', () => {
                     const parentPage = 1453;
                     page.meta = new Meta('repo');
                     page.parentPageId = parentPage;
+                    const expected = new RemotePage(pageId, 1, page.title, page.meta, page.parentPageId);
+                    expected.localPage = page;
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .post(basePath, createPageFixtures.withParentAndMeta)
                         .reply(200, { id: pageId });
                     return sdk
                         .createPage(page).then(created => {
-                            created.should.equal(page);
-                            created.confluencePageId.should.equal(pageId);
+                            created.should.eql(expected);
                         });
                 });
             });
@@ -210,8 +209,14 @@ describe('confluence-sdk', () => {
 
     describe('updatePage', () => {
         const pageId = 1881;
+        const title = 'A Page Title';
+        const content = '<h1>hello</h1>';
         let requestMock;
+        let page;
         beforeEach(() => {
+            page = new RemotePage(pageId, 1, title, new Meta('repo'));
+            page.localPage = new LocalPage(title, new Meta('repo'));
+            page.localPage.html = content;
             requestMock = nock(sdkOpts.host, { reqheaders: requestHeaders }).put(
                 `${basePath}/${pageId}`
             );
@@ -223,8 +228,9 @@ describe('confluence-sdk', () => {
         });
         describe('when id is not specified', () => {
             it('should throw Error', () => {
+                page.id = null;
                 return sdk
-                    .updatePage(null, 11, 'Title', 'Html')
+                    .updatePage(page)
                     .should.be.rejectedWith(
                         'id should be a number'
                     );
@@ -232,8 +238,9 @@ describe('confluence-sdk', () => {
         });
         describe('when version is not specified', () => {
             it('should throw Error', () => {
+                page.version = null;
                 return sdk
-                    .updatePage(pageId, null, 'Title', 'Html')
+                    .updatePage(page)
                     .should.be.rejectedWith(
                         'version should be a number'
                     );
@@ -241,35 +248,29 @@ describe('confluence-sdk', () => {
         });
         describe('when title is not specified', () => {
             it('should throw Error', () => {
+                page.localPage.title = null;
                 return sdk
-                    .updatePage(pageId, 11, null, 'Html')
+                    .updatePage(page)
                     .should.be.rejectedWith(
                         'title should be a string'
-                    );
-            });
-        });
-        describe('when html is not specified', () => {
-            it('should throw Error', () => {
-                return sdk
-                    .updatePage(pageId, 11, 'Title', null)
-                    .should.be.rejectedWith(
-                        'html should be a string'
                     );
             });
         });
 
         describe('when parent page is not a number', () => {
             it('should throw Error', () => {
+                page.localPage.parentPageId = 'nan';
                 return sdk
-                    .updatePage(pageId, 11, 'Title', 'Html', 'Parent')
+                    .updatePage(page)
                     .should.be.rejectedWith('parentPage should be a number');
             });
         });
 
         describe('when meta is not an instance of Meta', () => {
             it('should throw Error', () => {
+                page.localPage.meta = 'not Meta';
                 return sdk
-                    .updatePage(pageId, 11, 'Title', 'Html', 1453, 777)
+                    .updatePage(page)
                     .should.be.rejectedWith('meta is not an instance of Meta class');
             });
         });
@@ -277,57 +278,32 @@ describe('confluence-sdk', () => {
         describe('when request fails', () => {
             it('should throw RequestError', () => {
                 requestMock.reply(400);
-                return sdk
-                    .updatePage(pageId, 11, 'Title', 'Html')
-                    .should.be.rejectedWith(RequestError);
+                return sdk.updatePage(page).should.be.rejectedWith(RequestError);
             });
         });
         describe('when update is successful', () => {
             describe('without parent page or meta', () => {
-                it('should return void', () => {
+                it('should return the updated RemotePage', () => {
+                    const expected = new RemotePage(pageId, 2, page.title, page.meta, page.parentPageId);
+                    expected.localPage = page.localPage;
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .put(`${basePath}/${pageId}`, updatePageFixtures.simple)
                         .reply(200);
-                    return sdk.updatePage(pageId, 11, 'Title', '<h1>Html</h1>')
-                        .should.be.fulfilled;
+                    return sdk.updatePage(page).should.eventually.eql(expected);
                 });
             });
-            describe('with parent page and no meta', () => {
-                it('should return void', () => {
-                    const parentPageId = 1566;
+            describe('with parent page and meta', () => {
+                it('should return the updated RemotePage', () => {
+                    page.localPage.parentPageId = 1566;
+                    const expected = new RemotePage(pageId, 2, page.title, page.meta, page.parentPageId);
+                    expected.localPage = page.localPage;
                     nock(sdkOpts.host, { reqheaders: requestHeaders })
                         .put(
                             `${basePath}/${pageId}`,
                             updatePageFixtures.withParent
                         )
                         .reply(200);
-                    return sdk.updatePage(
-                        pageId,
-                        11,
-                        'Title',
-                        '<h1>Html</h1>',
-                        parentPageId
-                    ).should.be.fulfilled;
-                });
-            });
-            describe('with parent page and meta', () => {
-                it('should return void', () => {
-                    const parentPageId = 1566;
-                    const meta = new Meta('repo');
-                    nock(sdkOpts.host, { reqheaders: requestHeaders })
-                        .put(
-                            `${basePath}/${pageId}`,
-                            updatePageFixtures.withParentAndMeta
-                        )
-                        .reply(200);
-                    return sdk.updatePage(
-                        pageId,
-                        11,
-                        'Title',
-                        '<h1>Html</h1>',
-                        parentPageId,
-                        meta
-                    ).should.be.fulfilled;
+                    return sdk.updatePage(page).should.eventually.eql(expected);
                 });
             });
         });
@@ -404,46 +380,32 @@ describe('confluence-sdk', () => {
         });
         describe('when there are child pages', () => {
             describe('when all results are returned with the first response', () => {
-                it('should return an array with the child pages', () => {
-                    const expected = new Map().set('foo/bar/doc.md',
-                        {
-                            id: 1821,
-                            parentId: 1453,
-                            version: 18,
-                            title: 'Test',
-                            meta: {
-                                path: 'foo/bar/doc.md',
-                                repo: 'https://github.com/Org/Repo',
-                                sha: 'Zm9vL2Jhci9kb2MubWQ=',
-                                git_ref: 'git_ref',
-                                git_sha: 'git_sha',
-                                publisher_version: '1.0.0'
-                            }
-                        }
+                it('should return a map with the child pages, indexed by path', () => {
+                    const meta = new Meta(
+                        'https://github.com/Org/Repo',
+                        'foo/bar/doc.md',
+                        'Zm9vL2Jhci9kb2MubWQ=',
+                        'git_ref',
+                        'git_sha',
+                        '1.0.0'
                     );
+                    const remotePage = new RemotePage(1821, 18, 'Test', meta, 1453);
+                    const expected = new Map().set('foo/bar/doc.md', remotePage);
                     requestMock.reply(200, responseFixtures.childPages);
-                    return sdk
-                        .getChildPages(parentPageId)
-                        .should.eventually.eql(expected);
+                    return sdk.getChildPages(parentPageId).should.eventually.eql(expected);
                 });
                 describe('when results are paged', () => {
                     it('should traverse paged results an return all child pages', () => {
                         const expected = [1, 2, 3].reduce((map, p) => {
-                            const page = {
-                                id: p,
-                                parentId: 1453,
-                                title: `Page ${p}`,
-                                version: p,
-                                meta: {
-                                    path: `foo/bar/page${p}.md`,
-                                    repo: 'https://github.com/Org/Repo',
-                                    sha: 'Zm9vL2Jhci9kb2MubWQ=',
-                                    git_ref: 'git_ref',
-                                    git_sha: 'git_sha',
-                                    publisher_version: '1.0.0'
-                                }
-                            };
-                            map.set(page.meta.path, page);
+                            const meta = new Meta(
+                                'https://github.com/Org/Repo',
+                                `foo/bar/page${p}.md`,
+                                'Zm9vL2Jhci9kb2MubWQ=',
+                                'git_ref',
+                                'git_sha',
+                                '1.0.0'
+                            );
+                            map.set(meta.path, new RemotePage(p, p, `Page ${p}`, meta, 1453));
                             return map;
                         }, new Map());
 
