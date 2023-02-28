@@ -1,6 +1,7 @@
+import sinon from 'sinon';
 import config from '../../../lib/config.js';
 import Meta from '../../../lib/models/meta.js';
-
+const sandbox = sinon.createSandbox();
 describe('models/meta', () => {
     const [repo, path, sha] = ['repo', 'path', 'sha'];
     const { version: publisher_version, github: { sha: git_sha, refName: git_ref } } = config;
@@ -54,6 +55,29 @@ describe('models/meta', () => {
         it('should construct and return the github url from the metadata', () => {
             const expected = `${repo}/blob/${git_ref}/${path}`;
             new Meta(repo, path, sha).githubUrl.should.equal(expected);
+        });
+    });
+    describe('publisherVersionConflict', () => {
+        beforeEach(() => {
+            sandbox.replace(config, 'version', '3.2.1');
+        });
+        afterEach(() => {
+            sandbox.restore();
+        });
+        describe('when current version is 3.2.1', () => {
+            [
+                [['not a string'], true],
+                ['3.2.1', false],
+                ['3.2.0', false],
+                ['3.1.1', true],
+                ['2.2.1', true],
+            ].forEach(([version, expected]) => {
+                describe(`when publisher_version is ${version.toString()}`, () => {
+                    it('should return true', () => {
+                        new Meta(repo, path, sha, null, null, version).publisherVersionConflict().should.equal(expected);
+                    });
+                });
+            });
         });
     });
 });
