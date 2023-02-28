@@ -1,8 +1,8 @@
 {
-  "title": "Title",
+  "title": "A Page Title",
   "type": "page",
   "version": {
-    "number": 11
+    "number": 2
   },
   "ancestors": [
     {
@@ -11,7 +11,7 @@
   ],
   "body": {
     "storage": {
-      "value": "<h1>Html</h1>",
+      "value": "<h1>hello</h1>",
       "representation": "storage"
     }
   },
@@ -20,6 +20,22 @@
       "editor": {
         "key": "editor",
         "value": "v2"
+      },
+      "repo": {
+        "key": "repo",
+        "value": "repo"
+      },
+      "git_ref": {
+        "key": "git_ref",
+        "value": "branch-name"
+      },
+      "git_sha": {
+        "key": "git_sha",
+        "value": "git-hub-sha"
+      },
+      "publisher_version": {
+        "key": "publisher_version",
+        "value": "1.0.0"
       }
     }
   },
