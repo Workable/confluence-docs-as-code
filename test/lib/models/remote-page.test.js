@@ -9,7 +9,7 @@ import { LocalPage } from '../../../lib/models/index.js';
 
 const sandbox = sinon.createSandbox();
 
-describe('models/page', () => {
+describe('models/remote-page', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -126,7 +126,8 @@ describe('models/page', () => {
             it('should skip update', () => {
                 const page = new RemotePage(id, version, title, meta, parentId);
                 page.localPage = new LocalPage('local page', new Meta('repo', 'path', 'sha'));
-                return page.sync(renderer, confluence).then(() => {
+                return page.sync(renderer, confluence).then((skipped) => {
+                    skipped.should.equal(page);
                     sandbox.assert.notCalled(confluence.deletePage);
                     sandbox.assert.notCalled(confluence.updatePage);
                     sandbox.assert.notCalled(confluence.createAttachment);
@@ -148,7 +149,8 @@ describe('models/page', () => {
                 });
             });
             it('should update the remote page', () => {
-                return page.sync(renderer, confluence).then(() => {
+                return page.sync(renderer, confluence).then((updated) => {
+                    updated.should.equal(page);
                     sandbox.assert.notCalled(confluence.deletePage);
                     sandbox.assert.calledWith(confluence.updatePage, page);
                     sandbox.assert.calledWith(confluence.createAttachment, page.id, attachmentPath);
