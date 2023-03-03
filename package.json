@@ -7,7 +7,9 @@
     "posttest": "eslint ./lib/**/*.js",
     "test": "c8 mocha",
     "build": "ncc build lib/index.js --license licenses.txt --minify --source-map",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "predocs:generate": " rm -rf ./docs",
+    "docs:generate": "jsdoc --readme ./README.md -c jsdoc.json"
   },
   "author": "Eleftherios Chetzakis <eleftherios@workable.com>",
   "license": "ISC",
@@ -33,9 +35,11 @@
     "c8": "^7.12.0",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
+    "clean-jsdoc-theme": "^4.2.6",
     "dotenv": "^16.0.3",
     "eslint": "^8.29.0",
     "husky": "^8.0.3",
+    "jsdoc": "^4.0.2",
     "lint-staged": "^13.1.0",
     "mocha": "^10.1.0",
     "nock": "^13.2.9",
