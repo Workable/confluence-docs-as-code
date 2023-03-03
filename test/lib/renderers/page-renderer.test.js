@@ -8,6 +8,10 @@ import PageRenderer from '../../../lib/renderers/page-renderer.js';
 const sandbox = sinon.createSandbox();
 
 describe('renderers/page-render', () => {
+    beforeEach(() => {
+        sandbox.replace(config.github, 'refName', 'branch-name');
+        sandbox.replace(config.github, 'sha', 'git-hub-sha');
+    });
     afterEach(() => {
         sandbox.restore();
     });

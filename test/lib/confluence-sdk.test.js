@@ -43,6 +43,8 @@ describe('confluence-sdk', () => {
         sdk = new ConfluenceSdk(sdkOpts);
         sandbox.stub(logger, 'error');
         sandbox.replace(config, 'version', '1.0.0');
+        sandbox.replace(config.github, 'refName', 'branch-name');
+        sandbox.replace(config.github, 'sha', 'git-hub-sha');
     });
     afterEach(() => {
         sandbox.restore();

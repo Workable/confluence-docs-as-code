@@ -13,5 +13,9 @@
         "editor.formatOnType": true,
         "editor.formatOnSave": true,
         "editor.tabSize": 2,
+    },
+    "mochaExplorer.env": {
+        "GITHUB_SHA": "GITHUB_SHA: this should not interfere with the tests",
+        "GITHUB_REF_NAME": "GITHUB_REF_NAME: this should not interfere with the tests"
     }
 }
