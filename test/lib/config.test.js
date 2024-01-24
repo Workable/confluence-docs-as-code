@@ -23,6 +23,19 @@ describe('config', () => {
             });
         });
     });
+
+    describe('when kroki has different host', () => {
+
+        beforeEach(() => {
+            sandbox.replace(process.env, 'INPUT_KROKI_HOST', 'https://kroki.example.com');
+        });
+
+        it('should get kroki host from action inputs', async () => {
+            const config = await loadConfig();
+            config.kroki.host.should.be.equal('https://kroki.example.com');
+        });
+    });
+
     describe('when kroki is disabled', () => {
         beforeEach(() => {
             sandbox.replace(process.env, 'INPUT_KROKI_ENABLED', 'no');

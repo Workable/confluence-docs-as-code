@@ -37,6 +37,10 @@ inputs:
     description: 'When "yes" conversion of Mermaid & PlantUML graphs into images (png) using "kroki.io"'
     required: false
     default: 'yes'
+  kroki_host:
+    description: "Overwrite to use a local kroki deploymet"
+    requierd: false
+    default: 'https://kroki.io'
   mermaid_renderer:
     description: 'The strategy to use for mermaid graphs. Can be one of "none", "kroki" or "mermaid-plugin"'
     required: false
