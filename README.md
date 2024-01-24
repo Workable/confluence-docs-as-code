@@ -133,6 +133,12 @@ Defaults to `yes`.
 > [`mermaid_renderer`](#mermaid_renderer) and [`plantuml_renderer`](#plantuml_renderer)
 > options below.
 
+### `kroki_host` 
+
+*Optional*. When set this host is used as a kroki server instead of the default one.
+
+Defaults to https://kroki.io
+
 ### `mermaid_renderer`
 
 *Optional*. Can be one of:
@@ -188,7 +194,7 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v3
       - name: Publish to Confluence
-        uses: Workable/confluence-docs-as-code@v1
+        uses: Workable/confluence-docs-as-code@v1.5.0
         with:
           confluence_tenant: 'Your Confluence Account Name'
           confluence_space: 'The Confluence Space Key'
@@ -199,6 +205,7 @@ jobs:
           confluence_force_update: ${{ github.event.inputs.confluence_force_update }} # Optional
           confluence_cleanup: ${{ github.event.inputs.confluence_cleanup }} # Optional
           kroki_enabled: 'no' # Optional
+          kroki_host: 'https://kroki.io' # Optional
           mermaid_renderer: 'none' # Optional
           plantuml_renderer: 'none' # Optional
 ```
