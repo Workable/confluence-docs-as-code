@@ -136,6 +136,7 @@ Defaults to `yes`.
 ### `kroki_host` 
 
 *Optional*. When set this host is used as a kroki server instead of the default one.
+See [kroki docs](https://docs.kroki.io/kroki/setup/use-docker-or-podman/) on how to setup a local kroki instance.
 
 Defaults to https://kroki.io
 
