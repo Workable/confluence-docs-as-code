@@ -4,7 +4,7 @@ branding:
   icon: 'book-open'
   color: 'gray-dark'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
 inputs:
   confluence_tenant:
