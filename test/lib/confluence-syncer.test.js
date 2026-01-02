@@ -46,7 +46,7 @@ describe('confluence-syncer', () => {
                 it('should catch error and set action as failed', () => {
                     const error = new Error('Something went wrong');
                     sdkMock.findPage.rejects(error);
-                    getContextMock.returns({ pages: [] });
+                    getContextMock.returns({ pages: [], sectionHierarchy: {} });
                     return sync().then(() => {
                         sandbox.assert.calledWith(loggerMock.fail, error);
                     });
@@ -60,7 +60,7 @@ describe('confluence-syncer', () => {
                 it('should set action as failed and debug log the config', () => {
                     const error = 'Something went wrong';
                     sdkMock.findPage.rejects(new Error(error));
-                    getContextMock.returns({ pages: [] });
+                    getContextMock.returns({ pages: [], sectionHierarchy: {} });
                     return sync().then(() => {
                         const expected = `Config:\n${JSON.stringify(config, null, 2)}`;
                         sandbox.assert.calledWith(loggerMock.fail, sinon.match.has('message', error));
@@ -84,7 +84,7 @@ describe('confluence-syncer', () => {
                         readMe.parentPageId = undefined;
                         sdkMock.findPage.withArgs(siteName).resolves();
                         sdkMock.getChildPages.resolves(new Map());
-                        getContextMock.returns({ siteName, repo, pages: [], readMe: null });
+                        getContextMock.returns({ siteName, repo, pages: [], sectionHierarchy: {}, readMe: null });
                         sdkMock.createPage.resolves(new RemotePage(100, 1, siteName, new Meta(repo), 1));
                     });
                     it('should create home page without parent', () => {
@@ -99,7 +99,7 @@ describe('confluence-syncer', () => {
                 describe('when parent page not found', () => {
                     it('should fail with error', () => {
                         const error = `The page configured as parent (${config.confluence.parentPage}) does not exist in confluence`;
-                        getContextMock.returns({ pages: [] });
+                        getContextMock.returns({ pages: [], sectionHierarchy: {} });
                         sdkMock.findPage.resolves(undefined);
                         return sync().then(() => {
                             sandbox.assert.calledWith(loggerMock.fail, sinon.match.has('message', error));
@@ -125,7 +125,7 @@ describe('confluence-syncer', () => {
                         });
                         describe('when README.md not exists', () => {
                             beforeEach(() => {
-                                getContextMock.returns({ siteName, repo, pages: [], readMe: null });
+                                getContextMock.returns({ siteName, repo, pages: [], sectionHierarchy: {}, readMe: null });
                                 sdkMock.createPage.resolves(new RemotePage(100, 1, siteName, new Meta(repo), 1));
                             });
                             it('should create the page using the site name as content', () => {
@@ -142,7 +142,7 @@ describe('confluence-syncer', () => {
                             });
                             describe('when README.md contains no images', () => {
                                 beforeEach(() => {
-                                    getContextMock.returns({ siteName, repo, pages: [], readMe });
+                                    getContextMock.returns({ siteName, repo, pages: [], sectionHierarchy: {}, readMe });
                                     sdkMock.createPage.resolves(new RemotePage(100, 1, siteName, new Meta(repo), 1));
                                 });
                                 it('should create the page using the README.md as content', () => {
@@ -164,7 +164,7 @@ describe('confluence-syncer', () => {
                         });
                         describe('when README.md not exists', () => {
                             beforeEach(() => {
-                                getContextMock.returns({ siteName, repo, pages: [], readMe: null });
+                                getContextMock.returns({ siteName, repo, pages: [], sectionHierarchy: {}, readMe: null });
                             });
                             describe('when home page sha does not match', () => {
                                 it('should update the page using the site name as content', () => {
@@ -181,7 +181,7 @@ describe('confluence-syncer', () => {
                             beforeEach(() => {
                                 existingPage.repoConflict.returns(true);
                                 existingPage.meta = { repo };
-                                getContextMock.returns({ siteName, repo: 'other-repo', pages: [], readMe: null });
+                                getContextMock.returns({ siteName, repo: 'other-repo', pages: [], sectionHierarchy: {}, readMe: null });
                             });
                             it('should fail with error', () => {
                                 return sync().then(() => {
@@ -207,7 +207,7 @@ describe('confluence-syncer', () => {
                 beforeEach(() => {
                     local = sandbox.createStubInstance(LocalPage);
                     local.meta = new Meta(repo, 'path');
-                    getContextMock.returns({ siteName, repo, pages: [local], readMe });
+                    getContextMock.returns({ siteName, repo, pages: [local], sectionHierarchy: {}, readMe });
                     sdkMock.getChildPages.resolves(new Map());
                 });
                 it('should sync the local page', () => {
@@ -221,7 +221,7 @@ describe('confluence-syncer', () => {
                 let remote;
                 beforeEach(() => {
                     remote = sandbox.createStubInstance(RemotePage);
-                    getContextMock.returns({ siteName, repo, pages: [], readMe });
+                    getContextMock.returns({ siteName, repo, pages: [], sectionHierarchy: {}, readMe });
                     sdkMock.getChildPages.resolves(new Map().set('path', remote));
                 });
                 it('should sync the remote page', () => {
@@ -238,7 +238,7 @@ describe('confluence-syncer', () => {
                     local = sandbox.createStubInstance(LocalPage);
                     local.meta = new Meta(repo, path);
                     remote = sandbox.createStubInstance(RemotePage);
-                    getContextMock.returns({ siteName, repo, pages: [local], readMe });
+                    getContextMock.returns({ siteName, repo, pages: [local], sectionHierarchy: {}, readMe });
                     sdkMock.getChildPages.resolves(new Map().set(path, remote));
                 });
                 it('should sync the remote page', () => {
@@ -256,7 +256,7 @@ describe('confluence-syncer', () => {
     describe('cleanup', () => {
         const siteName = 'My Site';
         beforeEach(() => {
-            getContextMock.returns({ siteName });
+            getContextMock.returns({ siteName, sectionHierarchy: {} });
         });
         describe('when unexpected error occurs', () => {
             const error = new Error('Something went wrong');

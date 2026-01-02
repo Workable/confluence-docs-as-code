@@ -1,0 +1,11 @@
+site_name: Nested Site
+repo_url: https://github.com/test/nested-repo
+
+nav:
+  - Home: index.md
+  - Guides:
+    - Getting Started: guides/getting-started.md
+    - Advanced:
+      - Configuration: guides/advanced/configuration.md
+      - Deployment: guides/advanced/deployment.md
+  - API: api.md

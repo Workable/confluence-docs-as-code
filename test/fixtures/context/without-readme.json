@@ -4,6 +4,7 @@
   "pageRefs": {
     "test/fixtures/samples/no_readme/docs/getting-started.md": "Getting started"
   },
+  "sectionHierarchy": {},
   "pages": [
     {
       "title": "Getting started",
@@ -14,7 +15,8 @@
         "publisher_version": "1.0.0",
         "git_ref": "branch-name",
         "git_sha": "git-hub-sha"
-      }
+      },
+      "parentPath": null
     }
   ]
 }

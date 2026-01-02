@@ -1,0 +1,9 @@
+site_name: Test With Section READMEs
+repo_url: https://github.com/test/repo
+
+nav:
+  - Home: index.md
+  - Subscriptions:
+      - Overview: subscriptions/overview.md
+      - Development:
+          - Dev Arch: subscriptions/development/arch.md

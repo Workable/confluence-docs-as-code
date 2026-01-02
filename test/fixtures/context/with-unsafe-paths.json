@@ -2,5 +2,6 @@
   "siteName": "Fixture Site Name",
   "repo": "https://github.com/fixture-account/fixture-repo",
   "pages": [],
-  "pageRefs": {}
+  "pageRefs": {},
+  "sectionHierarchy": {}
 }

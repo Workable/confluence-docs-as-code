@@ -9,6 +9,9 @@
     "test/fixtures/samples/simple/docs/how-to.md": "PFX: How-To",
     "test/fixtures/samples/simple/README.md": "Fixture Site Name"
   },
+  "sectionHierarchy": {
+    "References": null
+  },
   "pages": [
     {
       "title": "PFX: Getting started",
@@ -19,7 +22,8 @@
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0",
         "repo": "https://github.com/fixture-account/fixture-repo"
-      }
+      },
+      "parentPath": null
     },
     {
       "title": "PFX: Architecture",
@@ -30,7 +34,8 @@
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0",
         "repo": "https://github.com/fixture-account/fixture-repo"
-      }
+      },
+      "parentPath": null
     },
     {
       "title": "PFX: Database",
@@ -41,7 +46,8 @@
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0",
         "repo": "https://github.com/fixture-account/fixture-repo"
-      }
+      },
+      "parentPath": "References"
     },
     {
       "title": "PFX: API",
@@ -52,7 +58,8 @@
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0",
         "repo": "https://github.com/fixture-account/fixture-repo"
-      }
+      },
+      "parentPath": "References"
     },
     {
       "title": "PFX: How-To",
@@ -63,7 +70,8 @@
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0",
         "repo": "https://github.com/fixture-account/fixture-repo"
-      }
+      },
+      "parentPath": null
     }
   ],
   "readMe": {
@@ -75,6 +83,7 @@
       "git_sha": "git-hub-sha",
       "publisher_version": "1.0.0",
       "repo": "https://github.com/fixture-account/fixture-repo"
-    }
+    },
+    "parentPath": null
   }
 }

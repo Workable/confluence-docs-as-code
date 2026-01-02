@@ -11,7 +11,8 @@
         "git_ref": "branch-name",
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0"
-      }
+      },
+      "parentPath": null
     },
     {
       "title": "Architecture",
@@ -22,7 +23,8 @@
         "git_ref": "branch-name",
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0"
-      }
+      },
+      "parentPath": null
     },
     {
       "title": "Database",
@@ -33,7 +35,8 @@
         "git_ref": "branch-name",
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0"
-      }
+      },
+      "parentPath": "References"
     },
     {
       "title": "API",
@@ -44,7 +47,8 @@
         "git_ref": "branch-name",
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0"
-      }
+      },
+      "parentPath": "References"
     },
     {
       "title": "How-To",
@@ -55,7 +59,8 @@
         "git_ref": "branch-name",
         "git_sha": "git-hub-sha",
         "publisher_version": "1.0.0"
-      }
+      },
+      "parentPath": null
     }
   ],
   "pageRefs": {
@@ -66,6 +71,9 @@
     "test/fixtures/samples/simple/docs/references/api.md": "API",
     "test/fixtures/samples/simple/docs/how-to.md": "How-To"
   },
+  "sectionHierarchy": {
+    "References": null
+  },
   "readMe": {
     "title": "Fixture Site Name",
     "meta": {
@@ -75,6 +83,7 @@
       "git_ref": "branch-name",
       "git_sha": "git-hub-sha",
       "publisher_version": "1.0.0"
-    }
+    },
+    "parentPath": null
   }
 }

@@ -16,11 +16,10 @@ Atlassian Confluence Cloud wiki.
   * *PlantUML* see [`plantuml_renderer`](#plantuml_renderer) for available options
 * Add a common [prefix](#confluence_title_prefix) to all page titles
 * Restricts page update to [confluence_user](#confluence_user)
+* Supports nested navigation in the `nav` section of the [MkDocs Configuration](#mkdocs-configuration)
 
 ## Limitations
 
-* Does not fully support nesting in the `nav` section of the [MkDocs Configuration](#mkdocs-configuration),
-  flattens all pages to one level.
 * Does not publish pages not described in the `nav` section.
 
 ## Requirements
